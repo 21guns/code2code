@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import xlrd
+from mako.template import Template
+from mako.runtime import Context
+from io import StringIO
+import os
+from lib import entity
+from lib import javaclass
+from lib import generatorjava
+
+def read_db_field(worksheet):
+	# print(str)
+	cloumn_index = 3
+	comment_index = 2
+	jdbcType_index = 4
+	note_index = 9
+	# print(ss)
+	return entity.read_db_field(worksheet.cell_value(rown,cloumn_index), 
+		worksheet.cell_value(rown,jdbcType_index), worksheet.cell_value(rown,comment_index),
+		worksheet.cell_value(rown,note_index), worksheet.cell_value(rown,cloumn_index) == 'id')
+
+
+#打开一个workbook
+workbook = xlrd.open_workbook('./db.xlsx')
+#抓取所有sheet页的名称
+worksheets = workbook.sheet_names()
+print('worksheets is %s' %worksheets)
+tables = []
+current_table = None
+current_module_name = ''
+for sheet_name in worksheets:
+	if sheet_name in ['']:
+		continue
+	print(sheet_name)
+	module_name = sheet_name
+	worksheet = workbook.sheet_by_name(sheet_name)
+	num_rows = worksheet.nrows
+	num_cols = worksheet.ncols
+	actions = []
+
+	fields = []
+	field_names = []
+	table_name = ''
+	#遍历sheet1中所有单元格cell
+	for rown in range(1, num_rows): 
+
+		if len(worksheet.cell_value(rown,1)) > 0:
+			fields = []
+			field_names = []
+			# print(worksheet.cell_value(rown,1))
+			current_table = entity.read_table(worksheet.cell_value(rown,1), '\n')
+			current_table.set_module_name(sheet_name)
+			tables.append(current_table)
+		# for coln in range(3,4):
+		cell = worksheet.cell_value(rown,3)
+		if len(cell.strip()) <= 0:
+			continue
+		f = read_db_field(worksheet)
+		if current_table != None:
+			current_table.add_fields(f)
+		# try:
+		# 	# print(rown,num_rows)
+		# 	if len(worksheet.cell_value(rown+1,1)) > 0:
+		# 		write_java_file(class_name,class_comment,fields,id_Field,module_name,table_name)
+		# except IndexError as e:
+		# 	print('IndexError:', e)
+workspace_root='/Users/jliu/Develop/workspace/sft/'
+generatorjava.write_projects(workspace_root,'sifangting',tables, actions)
+
+
+
+#定位到sheet1
+# worksheet = workbook.sheet_by_name(u'mall')
+"""
+#通过索引顺序获取
+worksheet = workbook.sheets()[0]
+#或
+worksheet = workbook.sheet_by_index(0)
+"""
+# num_rows = worksheet.nrows
+# num_cols = worksheet.ncols
+"""
+#遍历所有sheet对象
+for worksheet_name in worksheets:
+worksheet = workbook.sheet_by_name(worksheet_name)
+
+#遍历sheet1中所有行row
+
+for curr_row in range(num_rows):
+	row = worksheet.row_values(curr_row)
+	print('row%s is %s' %(curr_row,row))
+#遍历sheet1中所有列col
+
+for curr_col in range(num_cols):
+	col = worksheet.col_values(curr_col)
+	print('col%s is %s' %(curr_col,col))
+"""
+
+"""
+#其他写法：
+cell = worksheet.cell(rown,coln).value
+print cell
+#或
+cell = worksheet.row(rown)[coln].value
+print cell
+#或
+cell = worksheet.col(coln)[rown].value
+print cell
+#获取单元格中值的类型，类型 0 empty,1 string, 2 number, 3 date, 4 boolean, 5 error
+cell_type = worksheet.cell_type(rown,coln)
+print cell_type
+"""
