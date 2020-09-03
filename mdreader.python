@@ -1,101 +1,152 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-from lib import entity
-from lib import javaclass
-from lib import generatorjava
+import re
 from itertools import groupby
+from core.metadata import *
+from enum import Enum
 
+def read_table(line, space_character):
+	str = line.lstrip().rstrip().split(space_character)
+	if (len(str) > 2):
+		# print(str)
+		return 	table_metadata.new_table(str[len(str)-1],str[0])
+	if (len(str) < 2):
+		print('read_table table line %s' % (str))
+	return table_metadata.new_table(str[1],str[0])
+	
 #str值为|      | ID                | `id`           | `BIGINT(19)`   | Y    | N        | Y        |        |                                                   |
-def read_db_field(str,space_character):
-	# print(str)
-	cloumn_index = 3
-	comment_index = 2
-	jdbcType_index = 4
-	note_index = 9
-	s = str.lstrip().rstrip().split(space_character)
-	ss = []
-	for x in s:
-		x = x.lstrip().rstrip()
-		ss.append(x.replace('`', ''))
-	# print(ss)
-	return entity.read_db_field(ss[cloumn_index],ss[jdbcType_index] ,ss[comment_index],
-		ss[note_index], ss[cloumn_index] == 'id')
+def read_field(str,space_character):
+	if str.count('-') > 0:
+		return None
+	chinese_name_index, name_index = 2, 3
+	type_index, pk_index, nullable_index = 4, 5, 6
+	unique_index, default_value_index, note_index = 7, 8, 9
+	ss = parse_cell(str, space_character)
+	if len(re.findall('[\u4e00-\u9fa5]',ss[name_index])) > 0 :#检查是否包含汉字
+		return None
+	f = table_metadata.new_field(ss[name_index], ss[chinese_name_index], ss[type_index])
+	return f.is_pk(ss[pk_index] == 'Y').nullable(ss[nullable_index] == 'Y')\
+			.unique(ss[unique_index] == 'Y').default_value(ss[default_value_index])\
+			.note(ss[note_index])
+	
 #str值为| 字段      | 类型    | 描述                  |
-def read_interface_field(str,space_character):
-	l = line.lstrip().rstrip().split(space_character)
-	# print(l)
-	ss = []
-	for x in l:
-		x = x.lstrip().rstrip()
-		ss.append(x.replace('`', ''))
-	comment = ss[4] if len(ss[4])>0 else ss[3] # (lambda :ss[4],lambda : ss[3])[len(ss[4]) > 0]() 
-	return entity.read_interface_field(ss[1], ss[2],comment)
+def parse_cell(str,space_character):
+	s = str.lstrip().rstrip().split(space_character)
+	ss = list(map(lambda s: s.lstrip().rstrip().replace('`', ''), s))
+	return ss
+
 #表结构
-table_file = open('/Users/jliu/Develop/workspace/ktjr/mediation/doc/技术文档/系统设计/数据表结构.md', 'r')
-tables = []
+table_file = open('/Users/jliu/Develop/workspace/ktjr/case-mediation/doc/技术文档/系统设计/数据表结构.md', 'r')
+modules = []
+current_module = None
 current_table = None
-current_module_name = ''
-for l in table_file.readlines():
-	line = l.strip().lstrip().rstrip() # 把末尾的'\n'删掉
-	if line.count('#') == 2  : # ## 模块英文名
-		current_module_name = line.split(' ')[1]
-	if line.count('#') == 3:# ### 邮件模板配置表 email_notification
-		line = line.replace('#','').lstrip().rstrip()
-		if (len(line) == 0):
-			print(l)
-			continue
-		current_table = entity.read_table(line, ' ')
-		current_table.set_module_name(current_module_name)
-		tables.append(current_table)
-	if line.startswith('|'):
-		f = read_db_field(line, '|')
-		if current_table != None:
-			current_table.add_fields(f);
-#接口文档
-interfacr_filr = open('/Users/jliu/Develop/workspace/ktjr/mediation/doc/技术文档/接口文档/mediation-api.md', 'r')
-actions = []
-current_action = None
-lines = interfacr_filr.readlines()
-params_type = False
-for i,l in enumerate(lines):
+for i, l in enumerate(table_file.readlines()):
 	line = l.strip().lstrip().rstrip() # 把末尾的'\n'删掉
 	if len(line) == 0:
 		continue
-	if line.startswith('###') : #接口中文名
-		current_action = javaclass.new_java_class('','', line.split(' ')[1])
+	if re.match('^##\s', line) : # ## 模块英文名
+		current_module = metadata.Module(line.replace('##','').lstrip().rstrip())
+		modules.append(current_module)
+		continue
+	if re.match('^###\s', line) : # ### 邮件模板配置表 email_notification
+		line = line.replace('###','').lstrip().rstrip()
+		if (len(line) == 0):
+			print('\033[1;32;43m table name is None %s \033[0m')
+			continue	
+		current_table = table_metadata.new_table(line, ' ')
+		current_module.add_table(current_table)
+		continue
+	row = re.findall('^\|.*\|',line)
+	if (len(row) == 1):
+		f = read_field(line, '|')
+		if current_table != None:
+			current_table.add_fields(f);
+	else:
+		print('\033[1;32;43m table line(%s) = %s \033[0m' % (i, line))
+
+#接口文档
+Phase = Enum('Phase', ('Name', 'Url', 'Method', 'RequestType', 'RequestParamter', 'RequestEg', 'ResponseType', 'ResponseParamter', 'ResponseEg'))
+interfacr_filr = open('/Users/jliu/Develop/workspace/ktjr/case-mediation/doc/技术文档/接口文档/mediation-api.md', 'r')
+actions = []
+current_action = None
+phase = None #接口文档段落
+for i,l in enumerate(interfacr_filr.readlines()):
+	line = l.strip().lstrip().rstrip() # 把末尾的'\n'删掉
+	if len(line) == 0:
+		continue
+	if re.match('^##\s', line) : # ## 模块名
+		phase = Phase.Name
+		continue
+	if re.match('^###\s', line) : # 接口中文名称
+		line = line.replace('###','').lstrip().rstrip()		
+		if (len(line) == 0):
+			print('\033[1;32;43m interface name is None %s \033[0m')
+			continue		
+		current_action = action_metadata.new_action('', line)
+		phase = None
 		actions.append(current_action)
 	if line.startswith('-'):
+		line = line.replace('`', '').lstrip().rstrip()
 		if line.find('接口路径') != -1:#  - 接口路径: `/op/v1/institutions/search`
-			current_action.set_url(line.split(':')[-1])
-			if not current_action.url.startswith('/') :
-				print('\033[1;32;43m url is error %s and 第%d行 行内容 %s \033[0m' % (current_action.url, i,line))
+			phase = Phase.Url
+			url = line.split(':')[-1].lstrip().rstrip()
+			current_action.url(url)
+			if not url.startswith('/') :
+				print('\033[1;32;43m url is error 第%d行 行内容 %s \033[0m' % (i,line))
 		if line.find('HTTP Method') != -1:# - HTTP Method: `GET`
-			current_action.set_http_method(line.split(':')[-1])
-			# print(current_action)
+			phase = Phase.Method
+			current_action.http_method(line.split(':')[-1])
+	# 		# print(current_action)
 		if line.find('请求参数格式') != -1:#  - 请求参数格式: `QUERY STRING`
-			current_action.set_request_type(line.split(':')[-1])
+		# 	current_action.request_type(line.split(':')[-1])
+			phase = Phase.RequestType
+
 		if line.find('请求参数字段') != -1:#  - 请求参数字段
-			params_type = True
-			if lines[i+1].find('|') == -1: #无参数
-				pass
+			phase = Phase.RequestParamter
+	# 		params_type = True
+	# 		if lines[i+1].find('|') == -1: #无参数
+	# 			pass
+			continue
+		if line.find('请求示例') != -1:#  - 请求示例
+			phase = Phase.RequestEg
+			# params_type = 'Request
 		if line.find('响应类型') != -1:#  - 响应类型
-			# print(line.split(':')[-1])
-			current_action.set_response_type(line.split(':')[-1])
-			pass
+			phase = Phase.ResponseType
+	# 		# print(line.split(':')[-1])
+	# 		current_action.set_response_type(line.split(':')[-1])
+	# 		pass
+
 		if line.find('响应字段') != -1:#  - 响应字段
-			params_type = False
+			phase = Phase.ResponseParamter
+			continue
+		if line.find('响应示例') != -1:#  - 响应字段
+			phase = Phase.ResponseEg
 
-	if line.startswith('|'):
-		f = read_interface_field(line, '|')
-		if params_type :
-			current_action.add_request_params(f)
-		else :
-			current_action.add_response_params(f)
-		if f is not None and f.name.find('字段') != -1 :
-			pass
+	row = re.findall('^\|.*\|',line)
+	if (phase == Phase.RequestParamter or phase == Phase.ResponseParamter):
+		if (len(row) == 1):
+			if line.count('-') > 0:
+				continue
+			parms = parse_cell(line, '|')
+			print(parms)
+			if (phase == Phase.RequestParamter):
+				current_action.add_request_params(parms[1], parms[2], parms[4])
+			if (phase == Phase.ResponseParamter):
+				current_action.add_response_params(parms[1], parms[2], parms[3])
+		else:
+			print('\033[1;32;43m table line(%s) = %s \033[0m' % (i, line))
 
-print(actions)
+
+	# if line.startswith('|'):
+	# 	f = read_interface_field(line, '|')
+	# 	if params_type :
+	# 		current_action.add_request_params(f)
+	# 	else :
+	# 		current_action.add_response_params(f)
+	# 	if f is not None and f.name.find('字段') != -1 :
+	# 		pass
+
+# print(modules)
 
 	# if current_action != None:
 	# 	if current_action.check():
@@ -110,6 +161,6 @@ workspace_root='/Users/jliu/Develop/workspace/ktjr/mediation/'
 # write_parent(workspace_root,'ktjr.lcl')
 # write_project(workspace_root,'ktjr.lcl',current_table, current_action)
 # actions = []
-generatorjava.write_projects(workspace_root,'creditcloud',tables, actions)
+# generatorjava.write_projects(workspace_root,'creditcloud',tables, actions)
 
 

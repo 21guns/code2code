@@ -1,8 +1,7 @@
-# 根据excel生产java代码
+# 根据excel md 生成java代码
 
 # 项目介绍
-参考DDD，CQRS架构，
-生产基于Spring boot Mybatis的微服务架构的代码
+参考DDD，CQRS架构，生成基于Spring boot Mybatis的微服务架构的代码
 
 ## 相关架构 
 Query(extends DTO) ----------------->  
