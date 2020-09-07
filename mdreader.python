@@ -36,8 +36,9 @@ def parse_cell(str,space_character):
 	return ss
 
 #表结构
+Table_Phase = Enum('Table_Phase', ('ModuleName', 'Name', 'Field'))
 table_file = open('/Users/jliu/Develop/workspace/ktjr/case-mediation/doc/技术文档/系统设计/数据表结构.md', 'r')
-modules = []
+modules = {}
 current_module = None
 current_table = None
 for i, l in enumerate(table_file.readlines()):
@@ -45,8 +46,12 @@ for i, l in enumerate(table_file.readlines()):
 	if len(line) == 0:
 		continue
 	if re.match('^##\s', line) : # ## 模块英文名
+		phase = Table_Phase.ModuleName
 		current_module = metadata.Module(line.replace('##','').lstrip().rstrip())
-		modules.append(current_module)
+		if modules.get(current_module.name) is not None:
+			current_module = modules[current_module.name]
+		else :
+			modules[current_module.name] = current_module
 		continue
 	if re.match('^###\s', line) : # ### 邮件模板配置表 email_notification
 		line = line.replace('###','').lstrip().rstrip()
@@ -65,88 +70,92 @@ for i, l in enumerate(table_file.readlines()):
 		print('\033[1;32;43m table line(%s) = %s \033[0m' % (i, line))
 
 #接口文档
-Phase = Enum('Phase', ('Name', 'Url', 'Method', 'RequestType', 'RequestParamter', 'RequestEg', 'ResponseType', 'ResponseParamter', 'ResponseEg'))
+Interface_Phase = Enum('Interface_Phase', ('ModuleName', 'Name', 'Url', 'Method', 'RequestType', 'RequestParamter', 'RequestEg', 'ResponseType', 'ResponseParamter', 'ResponseEg'))
 interfacr_filr = open('/Users/jliu/Develop/workspace/ktjr/case-mediation/doc/技术文档/接口文档/mediation-api.md', 'r')
-actions = []
 current_action = None
 phase = None #接口文档段落
+group = action_metadata.Paramter.DEFAULT_GROUP
 for i,l in enumerate(interfacr_filr.readlines()):
 	line = l.strip().lstrip().rstrip() # 把末尾的'\n'删掉
 	if len(line) == 0:
 		continue
-	if re.match('^##\s', line) : # ## 模块名
-		phase = Phase.Name
+	if re.match('^##\s', line) : # ## 模块中文名
+		phase = Interface_Phase.ModuleName
 		continue
 	if re.match('^###\s', line) : # 接口中文名称
+		phase = Interface_Phase.Name
 		line = line.replace('###','').lstrip().rstrip()		
 		if (len(line) == 0):
 			print('\033[1;32;43m interface name is None %s \033[0m')
 			continue		
 		current_action = action_metadata.new_action('', line)
-		phase = None
-		actions.append(current_action)
 	if line.startswith('-'):
 		line = line.replace('`', '').lstrip().rstrip()
 		if line.find('接口路径') != -1:#  - 接口路径: `/op/v1/institutions/search`
-			phase = Phase.Url
+			phase = Interface_Phase.Url
 			url = line.split(':')[-1].lstrip().rstrip()
-			current_action.url(url)
 			if not url.startswith('/') :
 				print('\033[1;32;43m url is error 第%d行 行内容 %s \033[0m' % (i,line))
+				continue
+			current_action.url(url)
+			if modules.get(current_action.module_name()) is not None:
+				current_module = modules[current_action.module_name()]
+				current_module.add_action(current_action)
+			else :
+				modules[current_action.module_name()] = current_module = metadata.Module(current_action.module_name())
+				current_module.add_action(current_action)
+
 		if line.find('HTTP Method') != -1:# - HTTP Method: `GET`
-			phase = Phase.Method
+			phase = Interface_Phase.Method
 			current_action.http_method(line.split(':')[-1])
 	# 		# print(current_action)
 		if line.find('请求参数格式') != -1:#  - 请求参数格式: `QUERY STRING`
 		# 	current_action.request_type(line.split(':')[-1])
-			phase = Phase.RequestType
+			phase = Interface_Phase.RequestType
 
 		if line.find('请求参数字段') != -1:#  - 请求参数字段
-			phase = Phase.RequestParamter
+			phase = Interface_Phase.RequestParamter
 	# 		params_type = True
 	# 		if lines[i+1].find('|') == -1: #无参数
 	# 			pass
 			continue
 		if line.find('请求示例') != -1:#  - 请求示例
-			phase = Phase.RequestEg
+			phase = Interface_Phase.RequestEg
 			# params_type = 'Request
 		if line.find('响应类型') != -1:#  - 响应类型
-			phase = Phase.ResponseType
+			phase = Interface_Phase.ResponseType
 	# 		# print(line.split(':')[-1])
 	# 		current_action.set_response_type(line.split(':')[-1])
 	# 		pass
 
 		if line.find('响应字段') != -1:#  - 响应字段
-			phase = Phase.ResponseParamter
+			phase = Interface_Phase.ResponseParamter
 			continue
 		if line.find('响应示例') != -1:#  - 响应字段
-			phase = Phase.ResponseEg
+			phase = Interface_Phase.ResponseEg
 
 	row = re.findall('^\|.*\|',line)
-	if (phase == Phase.RequestParamter or phase == Phase.ResponseParamter):
+	if (phase == Interface_Phase.RequestParamter or phase == Interface_Phase.ResponseParamter):
 		if (len(row) == 1):
 			if line.count('-') > 0:
 				continue
+			if len(re.findall('字段',line)) and  len(re.findall('类型',line)) > 0 :
+				continue
 			parms = parse_cell(line, '|')
-			print(parms)
-			if (phase == Phase.RequestParamter):
-				current_action.add_request_params(parms[1], parms[2], parms[4])
-			if (phase == Phase.ResponseParamter):
-				current_action.add_response_params(parms[1], parms[2], parms[3])
+			# print(parms)
+			if (phase == Interface_Phase.RequestParamter):
+				current_action.add_request_params(parms[1], parms[2], parms[4], group)
+			if (phase == Interface_Phase.ResponseParamter):
+				current_action.add_response_params(parms[1], parms[2], parms[3], group)
+		elif line.startswith('-'):
+			# 设置参数group
+			l = line.replace('`', '').lstrip().rstrip().split(' ')
+			group = l[1];
+
 		else:
-			print('\033[1;32;43m table line(%s) = %s \033[0m' % (i, line))
+			print('\033[1;32;43m interface line(%s) = %s \033[0m' % (i, line))
 
-
-	# if line.startswith('|'):
-	# 	f = read_interface_field(line, '|')
-	# 	if params_type :
-	# 		current_action.add_request_params(f)
-	# 	else :
-	# 		current_action.add_response_params(f)
-	# 	if f is not None and f.name.find('字段') != -1 :
-	# 		pass
-
-# print(modules)
+print(modules)
 
 	# if current_action != None:
 	# 	if current_action.check():

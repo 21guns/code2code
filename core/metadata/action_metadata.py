@@ -1,13 +1,17 @@
 from .metadata import *
 
 class Paramter(Metadata):
-    def __init__(self, name, type, comment):
+    DEFAULT_GROUP = 'default'
+    def __init__(self, name, type, comment, group = 'default'):
         super(Paramter, self).__init__(name)
         self._type = type 
         self._require = False
         self._comment = comment
         self._note = ''
-        self._group = 'default'
+        self._group = group
+    def __str__(self):
+        return 'name = %s, type = %s, group = %s ' % (self.name, self._type, self._group)
+    __repr__ = __str__
 
     @property
     def group(self):
@@ -32,6 +36,8 @@ class UrlPath(Metadata):
             else:
                 self._not_path_variable.append(p)
 
+    def module_name(self):
+        return None if len(self._path) < 4 else self._path[3]
 
 ACTION_RESPONSE_TYPE = {
 	'LIST':'LIST',
@@ -52,6 +58,9 @@ class Request(Metadata):
         self._http_method = http_method
         self._type = ACTION_REQUEST_TYPE['QUERY']
         self._params = []
+    def __str__(self):
+        return '%s, params = %s ' % (self._url, self._params)
+    __repr__ = __str__
 
     def check(self):
         if not self._url.startswith('/') :
@@ -68,8 +77,9 @@ class Request(Metadata):
         self._url = url
         return self
 
-    def add_params(self, name, type, comment):
-        self._params.append(Paramter(name, type, comment))
+    def add_params(self, name, type, comment, group):
+        self._params.append(Paramter(name, type, group))
+        return self
 
 class Response(Metadata):
     def __init__(self, name = '', url = ''):
@@ -77,9 +87,19 @@ class Response(Metadata):
         self._type = ACTION_REQUEST_TYPE['QUERY']
         self._params = []
         self._eg = '' #响应示例
+        self._url = url
 
-    def add_params(self, name, type, comment):
-        self._params.append(Paramter(name, type, comment))
+    def __str__(self):
+        return '%s, params = %s ' % (self._url, self._params)
+    __repr__ = __str__
+
+    def url(self, url):
+        self._url = url
+        return self
+
+    def add_params(self, name, type, comment, group):
+        self._params.append(Paramter(name, type, comment, group))
+        return self
 
 class Action(Metadata):
     def __init__(self, name, comment):
@@ -87,22 +107,27 @@ class Action(Metadata):
         self._comment = comment
         self._request = Request()
         self._response = Response()
+
     def __str__(self):
-        return 'Action: name = %s, comment = %s ' % (self.name, self._comment)
+        return 'name = %s, request = %s, response = %s ' % (self.name, self._request, self._response)
     __repr__ = __str__
 
     def url(self, url):
         self._url_path = UrlPath(self.name, url)
         self._request.url(url)
+        self._response.url(url)
+
+    def module_name(self):
+        return self._url_path.module_name();
 
     def http_method(self, http_method):
         self._request.http_method(http_method)
 
-    def add_request_params(self, name, type, comment):
-        self._request.add_params(name, type, comment)
+    def add_request_params(self, name, type, comment, group = 'default'):
+        self._request.add_params(name, type, comment, group)
 
-    def add_response_params(self, name, type, comment):
-        self._response.add_params(name, type, comment)
+    def add_response_params(self, name, type, comment, group = 'default'):
+        self._response.add_params(name, type, comment, group)
 
 def new_action(name, comment):
     return Action(name, comment)

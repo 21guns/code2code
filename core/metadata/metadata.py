@@ -2,7 +2,7 @@ class Metadata(object):
     def __init__(self, name):
         self._name = name.lower()
     def __str__(self):
-        return 'Metadata:name=%s' % (self.name)
+        return 'Metadata: %s' % (self.name)
     @property
     def name(self):
         return self._name
@@ -13,7 +13,7 @@ class Module(Metadata):
         self._actions = []
         self._tables = []
     def __str__(self):
-        return 'Module:name=%s actions=%s tables=%s' % (self.name, self.actions, self.tables)
+        return 'Module:%s actions=%s tables=%s' % (self.name, self.actions, self.tables)
     __repr__ = __str__
 
     @property
