@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 from itertools import groupby
-from core.metadata import *
+from metadata import *
 from enum import Enum
 
 def read_table(line, space_character):
@@ -155,7 +155,12 @@ for i,l in enumerate(interfacr_filr.readlines()):
 		else:
 			print('\033[1;32;43m interface line(%s) = %s \033[0m' % (i, line))
 
+# parse()
 print(modules)
+# to_code(modules)
+
+
+
 
 	# if current_action != None:
 	# 	if current_action.check():

@@ -3,7 +3,40 @@
 # 项目介绍
 参考DDD，CQRS架构，生成基于Spring boot Mybatis的微服务架构的代码
 
-## 相关架构 
+## core代码继承关系
+metadata
+    Module
+    Table
+        Field
+    Action
+        UrlPath
+        Request
+        Response
+            Paramter
+
+Language 
+    Java
+        Class
+        Enum
+        
+    XML
+    Sql
+
+Module
+
+
+
+java
+    JavaClass
+    DTO
+    DO
+    VO
+    Controller
+    Service
+    Respository
+    Mapper
+
+## java代码架构 
 Query(extends DTO) ----------------->  
 
 Controller --> QueryService --> Mapper
