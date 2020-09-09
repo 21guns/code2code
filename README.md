@@ -4,7 +4,9 @@
 参考DDD，CQRS架构，生成基于Spring boot Mybatis的微服务架构的代码
 
 ## core代码继承关系
-metadata
+```
+- 标准文档解析后的元数据
+metadata 
     Module
     Table
         Field
@@ -14,17 +16,21 @@ metadata
         Response
             Paramter
 
+- 翻译语言
 Language 
     Java
         Class
         Enum
-        
     XML
     Sql
 
-Module
+- 生成的代码接口
+Project
+    Module
 
 
+- 辅助
+Context 上下文配置
 
 java
     JavaClass
@@ -35,6 +41,7 @@ java
     Service
     Respository
     Mapper
+```
 
 ## java代码架构 
 Query(extends DTO) ----------------->  

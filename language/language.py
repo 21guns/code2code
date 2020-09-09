@@ -1,8 +1,10 @@
 class Language(object):
     def __init__(self, name):
         self._name = name.lower()
+
     def __str__(self):
-        return 'Metadata: %s' % (self.name)
+        return 'Language: %s' % (self.name)
+        
     @property
     def name(self):
         return self._name
@@ -16,9 +18,6 @@ class Language(object):
         """
         pass
     
-class Code(object):
-    pass
-
 ]class Xml(Language):
     def __init__(self,):
         super(Xml, self).__init__('xml')
