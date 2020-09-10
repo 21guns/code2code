@@ -4,7 +4,7 @@ class Language(object):
 
     def __str__(self):
         return 'Language: %s' % (self.name)
-        
+
     @property
     def name(self):
         return self._name
@@ -18,7 +18,7 @@ class Language(object):
         """
         pass
     
-]class Xml(Language):
+class Xml(Language):
     def __init__(self,):
         super(Xml, self).__init__('xml')
 
@@ -26,3 +26,4 @@ class Language(object):
 class Sql(Language):
     def __init__(self,):
         super(Sql, self).__init__('sql')
+

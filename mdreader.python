@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 import re
 from itertools import groupby
-from metadata import *
-from module import new_project
+from src.context import *
+from src.metadata import *
+from src.module import *
+from src.engine import Engine
+from src.java import *
 from enum import Enum
-from context import Context
+
 def read_table(line, space_character):
 	str = line.lstrip().rstrip().split(space_character)
 	if (len(str) > 2):
@@ -56,8 +59,8 @@ def new_module(str):
 	return current_module
 
 #相关环境变量设置
-workspace_root='/Users/jliu/Develop/workspace/ktjr/mediation/'
-Context.CONTEXT.workspace(workspace_root)
+workspace_root='/Users/jliu/Develop/workspace/ktjr/tt/'
+CONTEXT.workspace = workspace_root
 
 #表结构
 modules = {}
@@ -78,7 +81,7 @@ with open('./template/设计规范/数据结构规范.md', 'r') as table_file:
 			if (len(line) == 0):
 				print('\033[1;32;43m table name is None %s \033[0m')
 				continue	
-			current_table = table_metadata.new_table(line, ' ')
+			current_table = read_table(line, ' ')
 			current_module.add_table(current_table)
 			continue
 		row = re.findall('^\|.*\|',line)
@@ -179,7 +182,10 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 				print('\033[1;32;43m interface line(%s) = %s \033[0m' % (i, line))
 
 # parse()
-new_project().parse(modules)
+Engine().config()\
+	.module(java.JavaModule)\
+	.finsh()\
+	.generator(modules)
 
 
 

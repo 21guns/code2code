@@ -1,5 +1,5 @@
 class Context(object):
-    CONTEXT = Context()
+    
     def __init__(self):
         self._params = {}
 
@@ -15,7 +15,8 @@ class Context(object):
     def workspace(self):
         return self._params['workspace']
 
+    @workspace.setter
     def workspace(self, workspace):
         self._params['workspace'] = workspace
-        return self
 
+CONTEXT = Context()
