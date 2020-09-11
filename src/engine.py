@@ -1,6 +1,8 @@
 from . import module
 
 class Engine(object):
+    def __init__(self):
+        self._modules = []
 
     def config(self):
         self._config = Config(self)
@@ -12,7 +14,11 @@ class Engine(object):
     def generator(self, modules):
         """解析元数据生成模块信息
         """
-        self._config._project.generator(modules)
+        for key, module in  modules.items():
+            _module = self._config._module(key)
+            self._modules.append(_module)
+            _module.generator(module)
+
         pass
 
 class Config(object):
@@ -21,16 +27,10 @@ class Config(object):
 
     def __init__(self, engine):
         self._engine = engine
-        self._project = None
-
-    def project(self, project = module.Project()):
-        self._project = project
-        return self
+        self._module = None
 
     def module(self, module_name = module.Module):
-        if (self._project is None):
-            self._project = module.Project()
-        self._project.set_module_name(module_name)
+        self._module = module_name
         return self
 
     def finsh(self):

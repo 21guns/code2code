@@ -1,4 +1,4 @@
-package com.${package_name}.${module_name}.service.entity;
+package ${java_class.package};
 <%
 	hasId = table.has_id()
 	id_Field =table.get_id_field()

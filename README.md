@@ -24,10 +24,9 @@ Language
     XML
     Sql
 
-- 生成的代码接口
-Project
-    Module
-
+- 业务模块
+Module
+    Project
 
 - 辅助
 Context 上下文配置

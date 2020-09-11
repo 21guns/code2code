@@ -3,6 +3,7 @@ class Metadata(object):
         self._name = name.lower()
     def __str__(self):
         return 'Metadata: %s' % (self.name)
+        
     @property
     def name(self):
         return self._name

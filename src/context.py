@@ -19,4 +19,12 @@ class Context(object):
     def workspace(self, workspace):
         self._params['workspace'] = workspace
 
+    @property
+    def package(self):
+        return self._params['package']
+
+    @package.setter
+    def package(self, package):
+        self._params['package'] = package
+
 CONTEXT = Context()

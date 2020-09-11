@@ -61,7 +61,7 @@ def new_module(str):
 #相关环境变量设置
 workspace_root='/Users/jliu/Develop/workspace/ktjr/tt/'
 CONTEXT.workspace = workspace_root
-
+CONTEXT.package = 'com.tt'
 #表结构
 modules = {}
 current_module = None

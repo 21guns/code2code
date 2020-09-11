@@ -21,6 +21,8 @@ class Table(Metadata):
     def add_fields(self, field):
         if field is not None:
             self._fields.append(field)
+            if (field.is_pk()):
+                self._pk.append(field)
 
 def new_table(name, comment):
 	return Table(name, comment)
@@ -41,6 +43,7 @@ class Field(Metadata):
     def is_pk(self, pk = True):
         self._is_pk = pk
         return self
+
     def nullable(self, nullable):
         self._nullable = nullable
         return self
