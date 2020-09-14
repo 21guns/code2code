@@ -17,7 +17,11 @@ class Table(Metadata):
     @property
     def pk(self):
         return self._pk
-    
+
+    @property
+    def comment(self):
+        return self._comment
+
     def add_fields(self, field):
         if field is not None:
             self._fields.append(field)
@@ -56,7 +60,12 @@ class Field(Metadata):
     def note(self, note):
         self._note = note
         return self
-
+    @property
+    def type(self):
+        return self._type
+    @property
+    def comment(self):
+        return self._note
 def new_field(name, chinese_name, type):
     return Field(name, chinese_name, type)
        

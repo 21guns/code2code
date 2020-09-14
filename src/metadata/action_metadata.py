@@ -20,7 +20,13 @@ class Paramter(Metadata):
     @group.setter
     def group(self, value):   
         self._group = value
-
+    @property
+    def tyep(self):
+        return self._type
+    @property
+    def comment(self):
+        return self._comment
+          
 class UrlPath(Metadata):
     def __init__(self, name, url):
         super(UrlPath, self).__init__(name)

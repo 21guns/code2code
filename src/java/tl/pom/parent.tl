@@ -200,16 +200,6 @@
 				<artifactId>httpclient</artifactId>
 				<version>4.5.10</version>
 			</dependency>
-			<dependency>
-				<groupId>org.mapstruct</groupId>
-				<artifactId>mapstruct</artifactId>
-				<version>1.3.1.Final</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mapstruct</groupId>
-				<artifactId>mapstruct-processor</artifactId>
-				<version>1.3.1.Final</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

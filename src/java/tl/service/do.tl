@@ -1,7 +1,8 @@
 package ${java_class.package};
 <%
-	hasId = table.has_id()
-	id_Field =table.get_id_field()
+	hasId = java_class.has_id
+	id_Field =java_class.id_field
+	class_name = java_class.class_name
 %>
 % if hasId:
 	% if id_Field.type == "String" :
@@ -27,14 +28,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
-% for a in table.fields:
-	% if a.name in ['type','status']:
+% for a in java_class.fields:
+	% if a.name in []:
 		<% enumType = table.entity_name+a.name[0].upper() + a.name[1:] + "Enum" %>
 import com.${package_name}.${module_name}.api.enums.${enumType};
 	% endif
 % endfor
 /**
- * ${table.comment}
+ * ${java_class.comment}
  */
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
@@ -63,10 +64,10 @@ public class ${class_name} extends StringIDEntity {
 public class ${class_name} implements Serializable {
 % endif 
 
-% for a in table.fields:
+% for a in java_class.fields:
 	<% 
 	enumType = a.type
-	if a.name in ['type','status']:
+	if a.name in []:
 		enumType = table.entity_name+a.name[0].upper() + a.name[1:] + "Enum"
 	%>
 	% if hasId:
