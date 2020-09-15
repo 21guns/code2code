@@ -19,6 +19,8 @@ class Engine(object):
             self._modules.append(_module)
             _module.generator(module)
 
+        for m in self._modules:
+            m.write_file()
         pass
 
 class Config(object):

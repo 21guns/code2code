@@ -11,6 +11,9 @@ class Module(object):
         
     def generator(self, module ):
         pass
+    
+    def write_file(self):
+        pass
 
 class Project(object):
     def __init__(self, name, module = Module):
@@ -20,8 +23,11 @@ class Project(object):
     @property
     def name(self):
         return self._name
-        
+
     def generator(self, module ):
         """解析元数据生成代码和项目相关信息
         """
+        pass
+    
+    def write_file(self):
         pass

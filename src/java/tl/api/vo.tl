@@ -1,4 +1,4 @@
-package com.${package_name}.${action.module_name}.api.vo;
+package package ${java_class.package};
 
 import lombok.AllArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * ${action.comment}
+ * ${java_class.comment}
  */
 @SuperBuilder(toBuilder = true)
 @AllArgsConstructor
@@ -25,9 +25,9 @@ import java.util.Objects;
 @Setter
 @Getter
 
-public class ${action.class_name}VO implements Serializable {
+public class ${java_class.class_name}VO implements Serializable {
 
-	% for a in action.response:
+	% for a in java_class.response:
 	/**
  	 * ${a.comment}
 	 */
