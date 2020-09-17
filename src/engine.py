@@ -1,41 +1,60 @@
 from . import module
+from . import language
 
 class Engine(object):
     def __init__(self):
         self._modules = []
 
-    def config(self):
-        self._config = Config(self)
-        return self._config
+    def reader(self):
+        self._reader = Reader(self)
+        return self._reader
+
+
+class Reader(object):
+    def __init__(self, engine):
+        self._engine = engine
 
     def reader_table(self):
-        pass
+        
+        return self
+
+    def reader_interface(self):
+        
+        return self
+
+    def config_mapping(self, cfg_mapping = language.LanguageMapping):
+        self._cfg_mapping = Mapping(self._engine, cfg_mapping)
+        return self._cfg_mapping
+
+class Mapping(object):
+    def __init__(self, engine, cfg_mapping):
+        self._engine = engine
+        self._cfg_mapping = cfg_mapping
+
+    def mapping(self, modules):
+        if (self._cfg_mapping is not None):
+            self._cfg_mapping().mapping(modules)
+        return self
+
+    def config_module(self, cfg_module = module.Module):
+        self._cfg_module = Module(self._engine, cfg_module)
+        return self._cfg_module
+
+class Module(object):
+
+    def __init__(self, engine, cfg_module):
+        self._engine = engine
+        self._cfg_module = cfg_module
+        self._modules = []
 
     def generator(self, modules):
         """解析元数据生成模块信息
         """
         for key, module in  modules.items():
-            _module = self._config._module(key)
+            _module = self._cfg_module(key)
             self._modules.append(_module)
             _module.generator(module)
 
         for m in self._modules:
             m.write_file()
-        pass
-
-class Config(object):
-    _table_reader = None
-    _interface_reader = None
-
-    def __init__(self, engine):
-        self._engine = engine
-        self._module = None
-
-    def module(self, module_name = module.Module):
-        self._module = module_name
-        return self
-
-    def finsh(self):
-        """完成配置
-        """
-        return self._engine
+        pass    

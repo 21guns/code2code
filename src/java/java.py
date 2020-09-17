@@ -1,14 +1,39 @@
-from ..language import Language
+from ..language import Language, LanguageMapping
 from ..module import Module, Project
 from ..context import *
+from ..utils import *
+
 from mako.template import Template
 from mako.runtime import Context
 from io import StringIO
 import os
-from ..utils import *
-
+from itertools import groupby
 
 path = os.path.dirname(os.path.abspath(__file__))# get this file path
+
+def parse_type(dbType):
+    type = None
+    if "VARCHAR" in dbType:
+        type = "String"
+    elif "TINYINT" in dbType:
+        type = "Byte"
+    elif "DATETIME" in dbType:
+        type = "LocalDateTime"
+    elif "DATE" in dbType:
+        type = "LocalDate"
+    elif "DECIMAL" in dbType:
+        type = "BigDecimal"
+    elif "INT" == dbType:
+        type = "Integer"
+    elif "BIGINT UNSIGNED" == dbType:
+        type = "Long"
+    elif "BIGINT" == dbType:
+        type = "Long"
+    elif "JSON" == dbType:
+        type = "HashMap"
+    else:
+        print('parse java type ', dbType)
+    return type
 
 class Java(Language):
     def __init__(self):
@@ -21,13 +46,14 @@ class Java(Language):
         pass
 
 class JavaField(Java):
-    def __init__(self, filed_name, type, comment):
+    def __init__(self, filed_name, db_type, comment):
         super(JavaField, self).__init__()
         self._filed_name = filed_name
-        self._type = type 
+        self._db_type = db_type
+        self._type = parse_type(db_type) 
         self._comment = comment
     def __str__(self):
-        return '%s, %s ' % (self._filed_name, self._type)
+        return 'JavaField:%s, %s ' % (self._filed_name, self._type)
     __repr__ = __str__
 
     @property
@@ -44,6 +70,27 @@ class JavaField(Java):
     @property
     def note(self):
         return ''
+    @property
+    def full_type(self):
+        if (self._type in ['String', 'Byte', 'Integer','Long']):
+            return '.'.join('java.lang', self._type)
+        elif (self._type in ['LocalDateTime', 'LocalDate']):
+            return '.'.join('java.time', self._type)
+        elif (self._type == 'HashMap'):
+            return 'java.util.HashMap'
+        elif (self._type == 'BigDecimal'):
+            return 'java.math.BigDecimal'
+        else:
+            return self._type
+    @property
+    def jdbc_type(self):
+        if (self.db_type == "INT") :
+            return "INTEGER"
+        elif (self.db_type == "BIGINT UNSIGNED"):
+            return "BIGINT"
+        elif (self.jdbcType == "DATETIME"):
+            return "TIMESTAMP"
+        return self._db_type
 
 class JavaClass(Java):
     def __init__(self, project, class_metadata):
@@ -81,6 +128,9 @@ class JavaClass(Java):
     def comment(self):
         return self._class_metadata.comment
 
+    def add_fields(self, field):
+        self._fields.append(field)
+        return self
     def set_package(self, package):
         self._package = package
         return self
@@ -89,44 +139,32 @@ class JavaClass(Java):
         self._class_name_suffix = suffix
         return self
 
-    def parse_type(self, filed_name, dbType):
-        type = None
-        javaType = None
-        if "VARCHAR" in dbType:
-            type = "String"
-            javaType = "java.lang.String"
-        elif "TINYINT" in dbType:
-            type = "Byte"
-            javaType = "java.lang.Byte"
-        elif "DATETIME" in dbType:
-            type = "LocalDateTime"
-            javaType = "java.time.LocalDateTime"
-        elif "DATE" in dbType:
-            type = "LocalDate"
-            javaType = "java.time.LocalDate"
-        elif "DECIMAL" in dbType:
-            type = "BigDecimal"
-            javaType = "java.math.BigDecimal"
-        elif "INT" == dbType:
-            type = "Integer"
-            javaType = "java.lang.Integer"
-        elif "BIGINT UNSIGNED" == dbType:
-            type = "Long"
-            javaType = "java.lang.Long"
-        elif "BIGINT" == dbType:
-            type = "Long"
-            javaType = "java.lang.Long"
-        elif "JSON" == dbType:
-            type = "HashMap"
-            javaType = "java.util.HashMap"
-        else:
-            type = None
-            print(filed_name, javaType)
-        return type, javaType
-
     def generator(self):
         pass
 
+class JavaClassLanguageMapping(LanguageMapping):
+
+    def mapping(self, modules):
+        self._meta_mapping = {}
+        for key, module in  modules.items():
+            for t in module.tables:
+                jc = JavaClass(None, t)
+                t.java_class = jc
+                for f in t.fields:
+                    dbType = f.type.split('(')[0]
+                    jf = JavaField(convert(f.name,'_',False), dbType, t.comment)
+                    jf.field_metadata = f
+                    jc.add_fields(jf)
+                pass
+            
+            for a in module.actions:
+                # for g, p in groupby(a.request.params,key=lambda x:x.group):
+                    # print(g,list(p))
+
+                for g, p in groupby(a.response.params,key=lambda x:x.group):
+                    print(g,list(p))  
+
+                    
 class JavaClassMako(JavaClass):
     def __init__(self, project, class_metadata, tl_file):
         super(JavaClassMako, self).__init__(project, class_metadata)
@@ -155,7 +193,7 @@ class DOJavaClassMako(JavaClassMako):
     def generator(self):
         for t in self._class_metadata.fields:
             dbType = t.type.split('(')[0]
-            type, _ = self.parse_type(t.name, dbType)
+            type = parse_type(dbType)
             if type is not None :
                 self._fields.append(JavaField(convert(t.name,'_',False), type, t.comment))
             if (t.name == 'id'):
@@ -248,10 +286,11 @@ class JavaProject(Project):
                 cl.generator()
             
         for a in module.actions:
-            for c in self._action_template_class:
-                cl = c(self, t)
-                self.add_class(cl)
-                cl.generator()
+            pass
+            # for c in self._action_template_class:
+            #     cl = c(self, t)
+            #     self.add_class(cl)
+            #     cl.generator()
                 
     def write_file(self):
         # if not os.path.exists(self.path):

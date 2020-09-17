@@ -1,9 +1,9 @@
 class Metadata(object):
     def __init__(self, name):
-        self._name = name.lower()
+        self._name = name
     def __str__(self):
         return 'Metadata: %s' % (self.name)
-        
+
     @property
     def name(self):
         return self._name

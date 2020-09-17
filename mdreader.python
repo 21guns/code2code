@@ -141,6 +141,8 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 
 			if line.find('请求参数字段') != -1:#  - 请求参数字段
 				phase = Interface_Phase.RequestParamter
+				group = action_metadata.Paramter.DEFAULT_GROUP
+
 		# 		params_type = True
 		# 		if lines[i+1].find('|') == -1: #无参数
 		# 			pass
@@ -156,6 +158,8 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 
 			if line.find('响应字段') != -1:#  - 响应字段
 				phase = Interface_Phase.ResponseParamter
+				group = action_metadata.Paramter.DEFAULT_GROUP
+
 				continue
 			if line.find('响应示例') != -1:#  - 响应字段
 				phase = Interface_Phase.ResponseEg
@@ -182,10 +186,13 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 				print('\033[1;32;43m interface line(%s) = %s \033[0m' % (i, line))
 
 # parse()
-Engine().config()\
-	.module(java.JavaModule)\
-	.finsh()\
-	.generator(modules)
+Engine()\
+	.reader()\
+	.reader_table().reader_interface()\
+	.config_mapping(java.JavaClassLanguageMapping)\
+	.mapping(modules)\
+	# .config_module(java.JavaModule)\
+	# .generator(modules)
 
 
 

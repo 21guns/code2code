@@ -41,7 +41,7 @@ class Field(Metadata):
         #备注
         self._note = ''
     def __str__(self):
-        return 'Field: name = %s, type = %s ' % (self.name, self._type)
+        return 'Field:%s %s' % (self.name, self._type)
     __repr__ = __str__
 
     def is_pk(self, pk = True):

@@ -27,3 +27,12 @@ class Sql(Language):
     def __init__(self,):
         super(Sql, self).__init__('sql')
 
+class LanguageMapping(object):
+
+    """映射meteadata到具体语言
+    """
+    def __init__(self):
+        pass
+
+    def mapping(self, moudles):
+        pass

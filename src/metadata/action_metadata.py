@@ -26,7 +26,7 @@ class Paramter(Metadata):
     @property
     def comment(self):
         return self._comment
-          
+
 class UrlPath(Metadata):
     def __init__(self, name, url):
         super(UrlPath, self).__init__(name)
@@ -74,6 +74,9 @@ class Request(Metadata):
         if self._http_method not in ['POST','GET','PUT','DELETE']:
             return False
         return True
+    @property
+    def params(self):
+        return self._params
 
     def http_method(self, http_method):
         self._http_method = http_method
@@ -99,6 +102,10 @@ class Response(Metadata):
         return '%s, params = %s ' % (self._url, self._params)
     __repr__ = __str__
 
+    @property
+    def params(self):
+        return self._params
+        
     def url(self, url):
         self._url = url
         return self
@@ -122,6 +129,12 @@ class Action(Metadata):
         self._url_path = UrlPath(self.name, url)
         self._request.url(url)
         self._response.url(url)
+    @property
+    def request(self):
+        return self._request
+    @property
+    def response(self):
+        return self._response
 
     def module_name(self):
         return self._url_path.module_name();
