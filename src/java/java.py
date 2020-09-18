@@ -145,7 +145,7 @@ class JavaClass(Java):
 class JavaClassLanguageMapping(LanguageMapping):
 
     def mapping(self, modules):
-        self._meta_mapping = {}
+        self._class_mapping = {}
         for key, module in  modules.items():
             for t in module.tables:
                 jc = JavaClass(None, t)
@@ -155,16 +155,22 @@ class JavaClassLanguageMapping(LanguageMapping):
                     jf = JavaField(convert(f.name,'_',False), dbType, t.comment)
                     jf.field_metadata = f
                     jc.add_fields(jf)
+                    self._class_mapping[jc.class_name] = jc
                 pass
             
             for a in module.actions:
+                # analytic(a.url_path(), self._class_mapping)
                 # for g, p in groupby(a.request.params,key=lambda x:x.group):
                     # print(g,list(p))
 
                 for g, p in groupby(a.response.params,key=lambda x:x.group):
                     print(g,list(p))  
 
-                    
+def analytic(url_path, class_mapping):
+    print(class_mapping)   
+    print(url_path.after_module_name(), url_path.url)
+        
+
 class JavaClassMako(JavaClass):
     def __init__(self, project, class_metadata, tl_file):
         super(JavaClassMako, self).__init__(project, class_metadata)

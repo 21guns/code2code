@@ -1,4 +1,5 @@
 from .metadata import *
+from ..utils import *
 
 class Paramter(Metadata):
     DEFAULT_GROUP = 'default'
@@ -42,8 +43,25 @@ class UrlPath(Metadata):
             else:
                 self._not_path_variable.append(p)
 
+    @property
+    def url(self):
+        return self._url
     def module_name(self):
         return None if len(self._path) < 4 else self._path[3]
+    def last_path(self):
+        return self.path[-1]
+
+    def last_path_name(self):
+        if (self.last_path().startswith('{')):
+            return self.path_variable_name[-1]
+        else :
+            return self.last_path()
+
+    def path_name(self, begin, step):
+        return ''.join(map(firstUpower, self._not_path_variable[begin:step]))
+
+    def after_module_name(self):
+        return self.path_name(4, len(self._path))
 
 ACTION_RESPONSE_TYPE = {
 	'LIST':'LIST',
@@ -57,9 +75,9 @@ ACTION_REQUEST_TYPE = {
 }
 
 class Request(Metadata):
-    def __init__(self, name = '', url = '', http_method = ''):
+    def __init__(self, name = '', http_method = ''):
         super(Request, self).__init__(name)
-        self._url = url
+        self._url = None
         self._eg = '' #请求示例
         self._http_method = http_method
         self._type = ACTION_REQUEST_TYPE['QUERY']
@@ -91,12 +109,12 @@ class Request(Metadata):
         return self
 
 class Response(Metadata):
-    def __init__(self, name = '', url = ''):
+    def __init__(self, name = ''):
         super(Response, self).__init__(name)
         self._type = ACTION_REQUEST_TYPE['QUERY']
         self._params = []
         self._eg = '' #响应示例
-        self._url = url
+        self._url = None
 
     def __str__(self):
         return '%s, params = %s ' % (self._url, self._params)
@@ -105,7 +123,7 @@ class Response(Metadata):
     @property
     def params(self):
         return self._params
-        
+
     def url(self, url):
         self._url = url
         return self
@@ -120,6 +138,7 @@ class Action(Metadata):
         self._comment = comment
         self._request = Request()
         self._response = Response()
+        self._url_path = None
 
     def __str__(self):
         return 'name = %s, request = %s, response = %s ' % (self.name, self._request, self._response)
@@ -127,8 +146,14 @@ class Action(Metadata):
 
     def url(self, url):
         self._url_path = UrlPath(self.name, url)
-        self._request.url(url)
-        self._response.url(url)
+        self._request.url(self._url_path)
+        self._response.url(self._url_path)
+    
+    def url_path(self):
+        if self._url_path is None:
+            print('\033[1;32;43m %s url is error \033[0m' % (self.name))
+        return self._url_path
+
     @property
     def request(self):
         return self._request
