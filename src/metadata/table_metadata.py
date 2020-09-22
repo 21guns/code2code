@@ -57,9 +57,13 @@ class Field(Metadata):
     def default_value(self, value):
         self._default_value = value
         return self
+    def get_note(self):
+        return self._note
+
     def note(self, note):
         self._note = note
         return self
+
     @property
     def type(self):
         return self._type

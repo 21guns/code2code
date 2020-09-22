@@ -191,8 +191,8 @@ Engine()\
 	.reader_table().reader_interface()\
 	.config_mapping(java.JavaClassLanguageMapping)\
 	.mapping(modules)\
-	# .config_module(java.JavaModule)\
-	# .generator(modules)
+	.config_module(java.JavaModule)\
+	.generator(modules)
 
 
 

@@ -23,7 +23,6 @@ import lombok.ToString;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,17 +73,17 @@ public class ${class_name} implements Serializable {
 		% if a.name not in ["id","gmt_created","gmt_modified"]:
 
 	/**
- 	 * ${a.comment}
- 	 * ${a.note}
-	 */
+		* ${a.comment}
+		* ${a.note}
+		*/
 	private ${enumType} ${a.name};
 		% endif
 	% else :
 
 	/**
- 	 * ${a.comment}
- 	 * ${a.note}
-	 */
+		* ${a.comment}
+		* ${a.note}
+		*/
 	private ${enumType} ${a.name};
 	%endif
 % endfor

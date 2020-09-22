@@ -22,7 +22,7 @@ class Paramter(Metadata):
     def group(self, value):   
         self._group = value
     @property
-    def tyep(self):
+    def type(self):
         return self._type
     @property
     def comment(self):
@@ -95,8 +95,11 @@ class Request(Metadata):
     @property
     def params(self):
         return self._params
+    
+    def get_method(self):
+        return self._http_method
 
-    def http_method(self, http_method):
+    def set_method(self, http_method):
         self._http_method = http_method
         return self
 
@@ -145,7 +148,7 @@ class Action(Metadata):
     __repr__ = __str__
 
     def url(self, url):
-        self._url_path = UrlPath(self.name, url)
+        self._url_path = UrlPath(self._name, url)
         self._request.url(self._url_path)
         self._response.url(self._url_path)
     
@@ -160,19 +163,27 @@ class Action(Metadata):
     @property
     def response(self):
         return self._response
-
+    @property
+    def comment(self):
+        return self._comment
     def module_name(self):
         return self._url_path.module_name();
 
     def http_method(self, http_method):
-        self._request.http_method(http_method)
+        self._request.set_method(http_method)
 
     def add_request_params(self, name, type, comment, group = 'default'):
         self._request.add_params(name, type, comment, group)
 
     def add_response_params(self, name, type, comment, group = 'default'):
         self._response.add_params(name, type, comment, group)
-
+    
+    @property
+    def name(self):
+        if self._url_path.after_module_name() == '' :
+            return self._request.get_method() + self._url_path.module_name()
+        return self._request.get_method() + self._url_path.after_module_name()
+    
 def new_action(name, comment):
     return Action(name, comment)
 

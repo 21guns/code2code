@@ -25,9 +25,9 @@ import java.util.Objects;
 @Setter
 @Getter
 
-public class ${java_class.class_name}VO implements Serializable {
+public class ${java_class.class_name} implements Serializable {
 
-	% for a in java_class.response:
+	% for a in java_class.fields:
 	/**
  	 * ${a.comment}
 	 */
