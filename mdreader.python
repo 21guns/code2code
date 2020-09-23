@@ -133,7 +133,7 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 
 			if line.find('HTTP Method') != -1:# - HTTP Method: `GET`
 				phase = Interface_Phase.Method
-				current_action.http_method(line.split(':')[-1])
+				current_action.http_method(line.split(':')[-1].lstrip().rstrip())
 		# 		# print(current_action)
 			if line.find('请求参数格式') != -1:#  - 请求参数格式: `QUERY STRING`
 			# 	current_action.request_type(line.split(':')[-1])
@@ -192,6 +192,7 @@ Engine()\
 	.config_mapping(java.JavaClassLanguageMapping)\
 	.mapping(modules)\
 	.config_module(java.JavaModule)\
+	.add_module(java.ParentModule())\
 	.generator(modules)
 
 

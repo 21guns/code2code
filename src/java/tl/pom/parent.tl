@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>com.${package_name}</groupId>
+	<%map = '${org.mapstruct.version}'%>
+	<groupId>${package_name}</groupId>
 	<artifactId>parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.2.RELEASE</version>
+		<version>2.3.3.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -22,7 +22,7 @@
 		<org.mapstruct.version>1.3.1.Final</org.mapstruct.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<docker-maven-plugin.version>1.3.0</docker-maven-plugin.version>
-		<com.version>0.0.1-SNAPSHOT</com.version> <!-- 仅仅为了在idea中关联依赖时使用-->
+		<release.version>0.0.1-SNAPSHOT</release.version> <!-- 仅仅为了在idea中关联依赖时使用-->
 	</properties>
 
 	<dependencyManagement>
@@ -30,7 +30,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>Hoxton.RELEASE</version>
+				<version>Hoxton.SR8</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -200,6 +200,11 @@
 				<artifactId>httpclient</artifactId>
 				<version>4.5.10</version>
 			</dependency>
+			<dependency>
+				<groupId>org.mapstruct</groupId>
+				<artifactId>mapstruct</artifactId>
+				<version>${map}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -225,7 +230,7 @@
 				<maven.compiler.source>11</maven.compiler.source>
 				<maven.compiler.target>11</maven.compiler.target>
 				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
-				<releases.version>0.0.1-SNAPSHOT</releases.version>
+				<release.version>0.0.1-SNAPSHOT</release.version>
 			</properties>
 		</profile>
 		<profile>
@@ -240,7 +245,7 @@
 				<maven.compiler.source>11</maven.compiler.source>
 				<maven.compiler.target>11</maven.compiler.target>
 				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
-				<releases.version>v1.0.0</releases.version>
+				<release.version>v1.0.0</release.version>
 			</properties>
 		</profile>
 		<profile>
@@ -255,7 +260,7 @@
 				<maven.compiler.source>11</maven.compiler.source>
 				<maven.compiler.target>11</maven.compiler.target>
 				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
-				<releases.version>v1.0.0</releases.version>
+				<release.version>v1.0.0</release.version>
 			</properties>
 		</profile>
 
@@ -272,7 +277,7 @@
 				<maven.compiler.source>11</maven.compiler.source>
 				<maven.compiler.target>11</maven.compiler.target>
 				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
-				<lcl.version>0.0.1-b-SNAPSHOT</lcl.version>
+				<release.version>0.0.1-b-SNAPSHOT</release.version>
 			</properties>
 		</profile>
 	</profiles>
@@ -290,6 +295,26 @@
 					<excludes>
 						<exclude>**/BaseControllerTest.java</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<release>11</release>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.12</version>
+						</path>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${map}</version>
+						</path>
+					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
 		</plugins>

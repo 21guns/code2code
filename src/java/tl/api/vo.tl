@@ -1,4 +1,4 @@
-package package ${java_class.package};
+package ${java_class.package};
 
 import lombok.AllArgsConstructor;
 import lombok.experimental.SuperBuilder;

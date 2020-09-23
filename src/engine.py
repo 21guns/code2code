@@ -37,6 +37,8 @@ class Mapping(object):
         return self
 
     def config_module(self, cfg_module = module.Module):
+        """配置模板类，模板类用于生产模块代码
+        """
         self._cfg_module = Module(self._engine, cfg_module)
         return self._cfg_module
 
@@ -47,14 +49,23 @@ class Module(object):
         self._cfg_module = cfg_module
         self._modules = []
 
+    def add_module(self, module):
+        """添加自动以模块
+        """
+        self._modules.append(module)
+        return self
+
     def generator(self, modules):
         """解析元数据生成模块信息
         """
+
+        ##生产内容
         for key, module in  modules.items():
             _module = self._cfg_module(key)
             self._modules.append(_module)
             _module.generator(module)
 
+        ##写入文件
         for m in self._modules:
             m.write_file()
         pass    

@@ -14,7 +14,7 @@ import com.guns21.support.entity.StringIDEntity;
 	% endif
 % endif 
 import lombok.AllArgsConstructor;
-import lombok.SuperBuilder;
+import lombok.experimental.SuperBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.io.Serializable;
 % for a in java_class.fields:
 	% if a.name in []:
 		<% enumType = table.entity_name+a.name[0].upper() + a.name[1:] + "Enum" %>

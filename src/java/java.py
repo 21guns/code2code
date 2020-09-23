@@ -9,6 +9,7 @@ from io import StringIO
 import os
 from itertools import groupby
 import difflib
+import copy
 
 path = os.path.dirname(os.path.abspath(__file__))# get this file path
 
@@ -33,8 +34,14 @@ def parse_type(otherType):
     elif "JSON" == otherType:
         type = "HashMap"
 
-    elif type == 'String':
-        pass
+    elif type.lower() == 'string':
+        type = "String"
+    elif type.lower() == 'int':
+        type = "Integer"
+    elif type.lower() == 'date':
+        type = "LocalDateTime"
+    elif type.lower() == 'number':
+        type = "Integer"
     else:
         print('\033[1;32;43m parse java type %s \033[0m' % type)
     return type
@@ -121,7 +128,12 @@ class JavaClass(Java):
         
     @property
     def package(self):
-        return '.'.join([self._project.package, self._package])
+        return '.'.join([self.project_package, self._package])
+    
+    @property
+    def project_package(self):
+        return self._project.package
+       
     @property
     def file_name(self):
         return self.class_name + '.' + self.name
@@ -156,6 +168,9 @@ class JavaClass(Java):
     def generator(self):
         pass
 
+    def copy(self):
+        return copy.deepcopy(self)
+
 class ClassField(object):
     def __init__(self, name):
         self._name = convert(name, '_', True)
@@ -170,7 +185,6 @@ class ClassField(object):
     @property
     def name(self):
         return self._name
-    
 
 class JavaClassLanguageMapping(LanguageMapping):
 
@@ -265,9 +279,9 @@ class JavaClassMako(object):
         buf = StringIO()
         ctx = Context(buf, java_class = self._java_class)
         self._template.render_context(ctx)
-        f = open(self.class_path + CONTEXT.separator + self._java_class.file_name, 'w')
-        f.write(buf.getvalue())
-        f.close()
+        with open(self.class_path + CONTEXT.separator + self._java_class.file_name, 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
 
 class DOJavaClassMako(JavaClassMako):
     def __init__(self, project, java_class):
@@ -282,20 +296,27 @@ class VOJavaClassMako(JavaClassMako):
         java_class.set_package('vo')
         java_class.set_class_name_suffix('VO')
 
+class MapperJavaClassMako(JavaClassMako):
+    def __init__(self, project, java_class):
+        super(MapperJavaClassMako, self).__init__(project, java_class, path + '/tl/service/mapper.tl')
+        java_class.set_package('repository.mapper')
+        java_class.set_class_name_suffix('Mapper')
 
 class JavaModule(Module):
 
     def __init__(self, name):
         super(JavaModule, self).__init__(name)
-
+        ## add template project 
+        self._projects.append(ServiceJavaProject(self))
+        self._projects.append(ApiJavaProject(self))
+        self._projects.append(AdminControllerJavaProject(self))
+        self._projects.append(ControllerJavaProject(self))
     @property       
     def path(self):
         return '/'.join([CONTEXT.workspace, self.name])
 
     def generator(self, module):
-        ## add template project 
-        self._projects.append(ServiceJavaProject(self))
-        self._projects.append(ApiJavaProject(self))
+
 
         for p in self._projects:
             p.generator(module)
@@ -312,12 +333,33 @@ class JavaModule(Module):
         buf = StringIO()
         ctx = Context(buf, package_name = CONTEXT.package, module_name=self.name)
         template.render_context(ctx)
-        f = open(self.path + CONTEXT.separator + 'pom.xml', 'w')
-        f.write(buf.getvalue())
-        f.close()
+        with open(self.path + CONTEXT.separator + 'pom.xml', 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
 
         for p in self._projects:
             p.write_file()
+
+class ParentModule(Module):
+    def __init__(self):
+        super(ParentModule, self).__init__('parent')
+
+    @property       
+    def path(self):
+        return '/'.join([CONTEXT.workspace, self.name])
+    
+    def write_file(self):
+         ## 1.mk dir
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+        ## 2.create pom
+        template = Template(filename = path + '/tl/pom/parent.tl', input_encoding='utf-8')
+        buf = StringIO()
+        ctx = Context(buf, package_name = CONTEXT.package)
+        template.render_context(ctx)
+        with open(self.path + CONTEXT.separator + 'pom.xml', 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
 
 class JavaProject(Project):
     java_src_root = '/src/main/java'
@@ -356,9 +398,15 @@ class JavaProject(Project):
             os.makedirs(self.java_src)
         if not os.path.exists(self.package_path):
             os.makedirs(self.package_path)
+            
+        self.write_prject();
+
         for c in self._class:
             c.write_file()
             pass
+
+    def write_prject(self):
+        pass
 
 class ServiceJavaProject(JavaProject):
     def __init__(self, module):
@@ -368,14 +416,25 @@ class ServiceJavaProject(JavaProject):
         """解析元数据生成代码和项目相关信息
         """
         for t in module.tables:
-            djc = DOJavaClassMako(self, t.java_class)
-            djc.generator()
-            self.add_class(djc)
+            self.add_class(DOJavaClassMako(self, t.java_class.copy()))
+            self.add_class(MapperJavaClassMako(self, t.java_class.copy()))
+            for c in self._class:
+                c.generator()
+
 
         # for a in module.actions:
         #     vjc = VOJavaClassMako(self, a.response.java_class)
         #     vjc.generator()
         #     self.add_class(vjc)
+    def write_prject(self):
+        ## 1.create pom
+        template = Template(filename = path + '/tl/pom/service.tl', input_encoding='utf-8')
+        buf = StringIO()
+        ctx = Context(buf, package_name = CONTEXT.package, module_name=self._module.name)
+        template.render_context(ctx)        
+        with open(self.path + CONTEXT.separator + 'pom.xml', 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
 
 class ApiJavaProject(JavaProject):
     def __init__(self, module):
@@ -393,3 +452,67 @@ class ApiJavaProject(JavaProject):
             vjc = VOJavaClassMako(self, a.response.java_class)
             vjc.generator()
             self.add_class(vjc)
+
+    def write_prject(self):
+        ## 1.create pom
+        template = Template(filename = path + '/tl/pom/api.tl', input_encoding='utf-8')
+        buf = StringIO()
+        ctx = Context(buf, package_name = CONTEXT.package, module_name=self._module.name)
+        template.render_context(ctx)        
+        with open(self.path + CONTEXT.separator + 'pom.xml', 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
+
+class AdminControllerJavaProject(JavaProject):
+    def __init__(self, module):
+        super(AdminControllerJavaProject, self).__init__('admin-controller', module)
+
+    def generator(self, module):
+        """解析元数据生成代码和项目相关信息
+        """
+        # for t in module.tables:
+            # djc = DOJavaClassMako(self, t.java_class)
+            # djc.generator()
+            # self.add_class(djc)
+
+        # for a in module.actions:
+        #     vjc = VOJavaClassMako(self, a.response.java_class)
+        #     vjc.generator()
+        #     self.add_class(vjc)
+
+    def write_prject(self):
+        ## 1.create pom
+        template = Template(filename = path + '/tl/pom/admin.tl', input_encoding='utf-8')
+        buf = StringIO()
+        ctx = Context(buf, package_name = CONTEXT.package, module_name=self._module.name)
+        template.render_context(ctx)        
+        with open(self.path + CONTEXT.separator + 'pom.xml', 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
+
+class ControllerJavaProject(JavaProject):
+    def __init__(self, module):
+        super(ControllerJavaProject, self).__init__('Controller', module)
+
+    def generator(self, module):
+        """解析元数据生成代码和项目相关信息
+        """
+        # for t in module.tables:
+            # djc = DOJavaClassMako(self, t.java_class)
+            # djc.generator()
+            # self.add_class(djc)
+
+        # for a in module.actions:
+        #     vjc = VOJavaClassMako(self, a.response.java_class)
+        #     vjc.generator()
+        #     self.add_class(vjc)
+
+    def write_prject(self):
+        ## 1.create pom
+        template = Template(filename = path + '/tl/pom/controller.tl', input_encoding='utf-8')
+        buf = StringIO()
+        ctx = Context(buf, package_name = CONTEXT.package, module_name=self._module.name)
+        template.render_context(ctx)        
+        with open(self.path + CONTEXT.separator + 'pom.xml', 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
