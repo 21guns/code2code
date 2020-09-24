@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.${package_name}.${module_name}.service.repository.mapper.${class_name}Mapper" >
+<mapper namespace="${java_class.package}.${java_class.class_name}" >
 	<%
 		COLUMNS_LINE_MAX = 80
 
@@ -15,8 +15,9 @@
 		values = []
 		values_line = ""
 		values_start = 0
-		table_name = table.name
-		fields = table.fields
+		table_name = java_class.metadata_name
+		fields = java_class.fields
+		class_name =java_class.original_class_name
 
 		for index in  range(len(fields)):
 
@@ -30,7 +31,7 @@
 				colums.append(colums_line)
 				colums_start = index
 
-			values_line = ', '.join(map(lambda x : "#{" + x.name +", jdbcType=" + x.jdbcType + "}", fields[values_start:index]))
+			values_line = ', '.join(map(lambda x : "#{" + x.name +", jdbcType=" + x.jdbc_type + "}", fields[values_start:index]))
 			if len(values_line) > COLUMNS_LINE_MAX :
 				values.append(values_line)
 				values_start = index
@@ -43,16 +44,16 @@
 		if (len(colums_line)) > 0:
 			colums.append(colums_line)
 
-		values_line = ', '.join(map(lambda x : "#{" + x.name +", jdbcType=" + x.jdbcType + "}", fields[values_start:]))
+		values_line = ', '.join(map(lambda x : "#{" + x.name +", jdbcType=" + x.jdbc_type + "}", fields[values_start:]))
 		if (len(values_line)) > 0:
 			values.append(values_line)
 	%>
-	<resultMap id="${class_name}ResultMap" type="com.${package_name}.${module_name}.api.vo.${class_name}VO" >
+	<resultMap id="${class_name}ResultMap" type="${java_class.module_package}.api.vo.${class_name}VO" >
 		% for index in  range(len(fields)):
 			% if fields[index].name == "id" :
-		<id column="id" property="id" jdbcType="${fields[index].jdbcType}" />
+		<id column="id" property="id" jdbcType="${fields[index].jdbc_type}" />
 			% else:
-		<result column="${fields[index].field}" property="${fields[index].name}" jdbcType="${fields[index].jdbcType}" />
+		<result column="${fields[index].field}" property="${fields[index].name}" jdbcType="${fields[index].jdbc_type}" />
  			% endif 
 		% endfor
   	</resultMap>
@@ -65,26 +66,26 @@
 		${',\n\t\t'.join(colums_as) }
   	</sql>
 
-% if table.has_id() :
-    <select id="selectByPrimaryKey" parameterType="${table.id_field.javaType}" resultMap="${class_name}ResultMap">
+% if java_class.has_id :
+    <select id="selectByPrimaryKey" parameterType="${java_class.id_field.type}" resultMap="${class_name}ResultMap">
         SELECT
         <include refid="columns" />
         FROM ${table_name}
-        WHERE id = #{id,jdbcType=${table.id_field.jdbcType}}
+        WHERE id = #{id,jdbcType=${java_class.id_field.jdbc_type}}
     </select>
 
     <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-        DELETE FROM ${table_name} WHERE id = #{id,jdbcType=${table.id_field.jdbcType}}
+        DELETE FROM ${table_name} WHERE id = #{id,jdbcType=${java_class.id_field.jdbc_type}}
     </delete>
 % endif
 
-    <insert id="insert" parameterType="com.${package_name}.${module_name}.service.entity.${class_name}DO">
+    <insert id="insert" parameterType="${java_class.project_package}.entity.${class_name}DO">
         INSERT INTO ${table_name} (<include refid="columns" />)
         VALUES
         (${',\n\t\t'.join(values)})
     </insert>
 
-    <insert id="insertSelective" parameterType="com.${package_name}.${module_name}.service.entity.${class_name}DO">
+    <insert id="insertSelective" parameterType="${java_class.project_package}.entity.${class_name}DO">
         INSERT INTO ${table_name}
 	 	<trim prefix="(" suffix=")" suffixOverrides=",">
 	      % for index in  range(len(fields)):
@@ -96,28 +97,28 @@
 	    <trim prefix="values (" suffix=")" suffixOverrides=",">
         	% for index in  range(len(fields)):
             <if test="${fields[index].name} != null">
-                #{${fields[index].name}, jdbcType=${fields[index].jdbcType}},
+                #{${fields[index].name}, jdbcType=${fields[index].jdbc_type}},
             </if>
 			% endfor
     	</trim>
 	</insert>
 
-	<update id="updateByPrimaryKey" parameterType="com.${package_name}.${module_name}.service.entity.${class_name}DO">
+	<update id="updateByPrimaryKey" parameterType="${java_class.project_package}.entity.${class_name}DO">
 	    UPDATE ${table_name}
 	    <set>
 	       % for index in  range(len(fields)):
-	        ${fields[index].field }= #{${fields[index].name}, jdbcType=${fields[index].jdbcType}},
+	        ${fields[index].field }= #{${fields[index].name}, jdbcType=${fields[index].jdbc_type}},
 			% endfor
 	    </set>
 	    WHERE id = #{id,jdbcType=BIGINT}
  	</update>
 
-    <update id="updateByPrimaryKeySelective" parameterType="com.${package_name}.${module_name}.service.entity.${class_name}DO">
+    <update id="updateByPrimaryKeySelective" parameterType="${java_class.project_package}.entity.${class_name}DO">
         UPDATE ${table_name}
         <set>
         	% for index in  range(len(fields)):
             <if test="${fields[index].name} != null">
-                ${fields[index].field }= #{${fields[index].name}, jdbcType=${fields[index].jdbcType}},
+                ${fields[index].field }= #{${fields[index].name}, jdbcType=${fields[index].jdbc_type}},
             </if>
 			% endfor
         </set>

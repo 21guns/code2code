@@ -36,6 +36,7 @@ class UrlPath(Metadata):
         self._path_variable_name = []
         self._path_variable_index = []
         self._not_path_variable = []
+        self._module_root = '/'.join(self._path[0:4])
         for i,p in enumerate(self._path):
             if p.startswith('{'):
                 self._path_variable_name.append(p.replace('{','').replace('}',''))
@@ -46,6 +47,10 @@ class UrlPath(Metadata):
     @property
     def url(self):
         return self._url
+    @property
+    def module_root(self):
+        return self._module_root
+
     def module_name(self):
         return None if len(self._path) < 4 else self._path[3]
     def last_path(self):
@@ -168,7 +173,10 @@ class Action(Metadata):
         return self._comment
     def module_name(self):
         return self._url_path.module_name();
-
+    @property
+    def module_root(self):
+        return self._url_path._module_root
+        
     def http_method(self, http_method):
         self._request.set_method(http_method)
 

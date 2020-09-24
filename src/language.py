@@ -8,16 +8,9 @@ class Language(object):
     @property
     def name(self):
         return self._name
-
-    def get_file_name(self):
-        pass
-    
-    def content(self):
-        """
-            返回代码内容
-        """
-        pass
-    
+    @name.setter
+    def name(self, name):
+        self._name = name 
 class Xml(Language):
     def __init__(self,):
         super(Xml, self).__init__('xml')

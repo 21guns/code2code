@@ -42,6 +42,10 @@ def parse_type(otherType):
         type = "LocalDateTime"
     elif type.lower() == 'number':
         type = "Integer"
+    elif type.lower() == 'boolean':
+        type = "Boolean"
+    elif type.lower() == 'long':
+        type = "Long"
     else:
         print('\033[1;32;43m parse java type %s \033[0m' % type)
     return type
@@ -57,9 +61,9 @@ class Java(Language):
         pass
 
 class JavaField(Java):
-    def __init__(self, filed_name, db_type, comment):
+    def __init__(self, field_name, db_type, comment):
         super(JavaField, self).__init__()
-        self._filed_name = filed_name
+        self._field_name = field_name
         self._db_type = db_type
         self._type = parse_type(db_type) 
         self._comment = comment
@@ -69,8 +73,11 @@ class JavaField(Java):
 
     @property
     def name(self):
-        return self._filed_name
+        return convert(self._field_name,'_',False)
 
+    @property
+    def field(self):
+        return self._field_name
     @property
     def type(self):
         return self._type
@@ -81,6 +88,9 @@ class JavaField(Java):
     @property
     def note(self):
         return ''
+    @property
+    def is_id(self):
+        return self.name == 'id'
     @property
     def full_type(self):
         if (self._type in ['String', 'Byte', 'Integer','Long']):
@@ -95,11 +105,11 @@ class JavaField(Java):
             return self._type
     @property
     def jdbc_type(self):
-        if (self.db_type == "INT") :
+        if (self._db_type == "INT") :
             return "INTEGER"
-        elif (self.db_type == "BIGINT UNSIGNED"):
+        elif (self._db_type == "BIGINT UNSIGNED"):
             return "BIGINT"
-        elif (self.jdbcType == "DATETIME"):
+        elif (self._db_type == "DATETIME"):
             return "TIMESTAMP"
         return self._db_type
 
@@ -125,15 +135,22 @@ class JavaClass(Java):
     @property
     def class_name(self):
         return convert(self._class_name, '_', True) + self._class_name_suffix
-        
+    @property
+    def original_class_name(self):
+        return convert(self._class_name, '_', True)
+    @property
+    def metadata_name(self):
+        return self._class_name
     @property
     def package(self):
-        return '.'.join([self.project_package, self._package])
-    
+        return '.'.join([self.project_package, self._package.replace('-',)])
     @property
     def project_package(self):
         return self._project.package
-       
+    @property
+    def module_package(self):
+        return self._project.module.package
+              
     @property
     def file_name(self):
         return self.class_name + '.' + self.name
@@ -142,7 +159,7 @@ class JavaClass(Java):
         return self._id_field
     @property
     def has_id(self):
-        return not self._id_field is None
+        return self._id_field is not None
     @property
     def fields(self):
         return self._fields
@@ -151,7 +168,10 @@ class JavaClass(Java):
         return self._comment
 
     def add_fields(self, field):
-        self._fields.append(field)
+        if field is not None :
+            self._fields.append(field)
+            if field.is_id:
+                self._id_field = field
         return self
     def set_package(self, package):
         self._package = package
@@ -208,37 +228,41 @@ class JavaClassLanguageMapping(LanguageMapping):
                 for f in t.fields:
                     otherType = f.type.split('(')[0]
                     f_name = convert(f.name,'_',False)
-                    jf = JavaField(f_name, otherType, f.get_note())
+                    jf = JavaField(f.name, otherType, f.get_note())
                     jf.field_metadata = f
                     jc.add_fields(jf)
 
                     cf.add_field(f_name)
                 pass
-            for a in module.actions:
-                # jc = JavaClass(None, a)
-                # self._do_mapping[jc.class_name] = jc
-                # if url_path.after_module_name() == '' :
-                    
-                # for g, p in groupby(a.request.params,key=lambda x:x.group):
-                    # print(g,list(p))
 
-                #响应参数
-                jc = JavaClass(a.name, a.comment)
-                self._vo_mapping[a.name] = jc
-                a.response.java_class = jc
-                jc.class_metadata = a
+            for root_path, g in groupby(module.actions,key=lambda x:x.module_root):
+                acs = list(g)
+                print(root_path)
+                for a in acs:
+                    # jc = JavaClass(None, a)
+                    # self._do_mapping[jc.class_name] = jc
+                    # if url_path.after_module_name() == '' :
+                        
+                    # for g, p in groupby(a.request.params,key=lambda x:x.group):
+                        # print(g,list(p))
 
-                cf = ClassField(a.name)
-                self._vo_field_mapping[a.name] = cf
-                for g, ps in groupby(a.response.params,key=lambda x:x.group):
-                    for p in list(ps):
-                        f_name = convert(p.name,'_',False)
-                        jf = JavaField(f_name, p.type, p.comment)
-                        jf.field_metadata = f
-                        jc.add_fields(jf)
+                    #响应参数
+                    jc = JavaClass(a.name, a.comment)
+                    self._vo_mapping[a.name] = jc
+                    a.response.java_class = jc
+                    jc.class_metadata = a
 
-                        cf.add_field(f_name)
-                    pass
+                    cf = ClassField(a.name)
+                    self._vo_field_mapping[a.name] = cf
+                    for g, ps in groupby(a.response.params,key=lambda x:x.group):
+                        for p in list(ps):
+                            f_name = convert(p.name,'_',False)
+                            jf = JavaField(p.name, p.type, p.comment)
+                            jf.field_metadata = f
+                            jc.add_fields(jf)
+
+                            cf.add_field(f_name)
+                        pass
             # print(self._do_mapping)
             # print(self._vo_mapping)
             # analytic(self._do_field_mapping, self._vo_field_mapping)
@@ -262,16 +286,8 @@ class JavaClassMako(object):
     def class_path(self):
         return self._project.java_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
 
-
     def generator(self):
         pass
-    #     super().generator(module)
-        # buf = StringIO()
-        # ctx = Context(buf, java_class = self)
-        # self._template.render_context(ctx)
-        # f = open(self._project.java_src + self.file_name, 'w')
-        # f.write(buf.getvalue())
-        # f.close()
 
     def write_file(self):
         if not os.path.exists(self.class_path):
@@ -280,6 +296,26 @@ class JavaClassMako(object):
         ctx = Context(buf, java_class = self._java_class)
         self._template.render_context(ctx)
         with open(self.class_path + CONTEXT.separator + self._java_class.file_name, 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
+
+class ResourceMako(JavaClassMako):
+    def __init__(self, project, java_class, tl_file):
+        super(ResourceMako, self).__init__(project, java_class, tl_file)
+        java_class.name = 'xml'
+    
+    @property
+    def resource_path(self):
+        return self._project.resource_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
+
+
+    def write_file(self):
+        if not os.path.exists(self.resource_path):
+            os.makedirs(self.resource_path)
+        buf = StringIO()
+        ctx = Context(buf, java_class = self._java_class)
+        self._template.render_context(ctx)
+        with open(self.resource_path + CONTEXT.separator + self._java_class.file_name, 'w') as f:
             f.write(buf.getvalue())
             f.close()
 
@@ -302,6 +338,12 @@ class MapperJavaClassMako(JavaClassMako):
         java_class.set_package('repository.mapper')
         java_class.set_class_name_suffix('Mapper')
 
+class MapperXmlMako(ResourceMako):
+    def __init__(self, project, java_class):
+        super(MapperXmlMako, self).__init__(project, java_class, path + '/tl/service/mapperXml.tl')
+        java_class.set_package('repository.mapper')
+        java_class.set_class_name_suffix('Mapper')
+
 class JavaModule(Module):
 
     def __init__(self, name):
@@ -311,13 +353,15 @@ class JavaModule(Module):
         self._projects.append(ApiJavaProject(self))
         self._projects.append(AdminControllerJavaProject(self))
         self._projects.append(ControllerJavaProject(self))
+
     @property       
     def path(self):
         return '/'.join([CONTEXT.workspace, self.name])
+    @property       
+    def package(self):
+        return '.'.join([CONTEXT.package, self.name])
 
     def generator(self, module):
-
-
         for p in self._projects:
             p.generator(module)
 
@@ -385,13 +429,27 @@ class JavaProject(Project):
     def java_src(self):
         return self.path + JavaProject.java_src_root
 
+    @property
+    def resource_src(self):
+        return self.path + JavaProject.resource_src_root
+
+    @property
+    def module(self):
+        return self._module
+
     def add_class(self, java_class):
         self._class.append(java_class)
+
+    def _add_class(self, module):
+        pass
 
     def generator(self, module):
         """解析元数据生成代码和项目相关信息
         """
-        pass
+        self._add_class(module)
+
+        for c in self._class:
+            c.generator()
                 
     def write_file(self):
         if not os.path.exists(self.java_src):
@@ -399,34 +457,32 @@ class JavaProject(Project):
         if not os.path.exists(self.package_path):
             os.makedirs(self.package_path)
             
-        self.write_prject();
+        self._write_prject();
 
         for c in self._class:
             c.write_file()
             pass
 
-    def write_prject(self):
+    def _write_prject(self):
         pass
 
 class ServiceJavaProject(JavaProject):
     def __init__(self, module):
         super(ServiceJavaProject, self).__init__('service', module)
 
-    def generator(self, module):
-        """解析元数据生成代码和项目相关信息
+    def _add_class(self, module):
+        """解析元数据生成代码
         """
         for t in module.tables:
             self.add_class(DOJavaClassMako(self, t.java_class.copy()))
             self.add_class(MapperJavaClassMako(self, t.java_class.copy()))
-            for c in self._class:
-                c.generator()
-
+            self.add_class(MapperXmlMako(self, t.java_class.copy()))
 
         # for a in module.actions:
-        #     vjc = VOJavaClassMako(self, a.response.java_class)
-        #     vjc.generator()
-        #     self.add_class(vjc)
-    def write_prject(self):
+            # self.add_class(VOJavaClassMako(self, a.response.java_class.copy()))
+
+
+    def _write_prject(self):
         ## 1.create pom
         template = Template(filename = path + '/tl/pom/service.tl', input_encoding='utf-8')
         buf = StringIO()
@@ -440,20 +496,17 @@ class ApiJavaProject(JavaProject):
     def __init__(self, module):
         super(ApiJavaProject, self).__init__('api', module)
 
-    def generator(self, module):
-        """解析元数据生成代码和项目相关信息
+    def _add_class(self, module):
+        """解析元数据生成代码
         """
-        # for t in module.tables:
-            # djc = DOJavaClassMako(self, t.java_class)
-            # djc.generator()
-            # self.add_class(djc)
+        for t in module.tables:
+            self.add_class(VOJavaClassMako(self, t.java_class.copy()))
 
         for a in module.actions:
-            vjc = VOJavaClassMako(self, a.response.java_class)
-            vjc.generator()
-            self.add_class(vjc)
+            self.add_class(VOJavaClassMako(self, a.response.java_class.copy()))
 
-    def write_prject(self):
+
+    def _write_prject(self):
         ## 1.create pom
         template = Template(filename = path + '/tl/pom/api.tl', input_encoding='utf-8')
         buf = StringIO()
@@ -467,20 +520,15 @@ class AdminControllerJavaProject(JavaProject):
     def __init__(self, module):
         super(AdminControllerJavaProject, self).__init__('admin-controller', module)
 
-    def generator(self, module):
-        """解析元数据生成代码和项目相关信息
+    def _add_class(self, module):
+        """解析元数据生成代码
         """
         # for t in module.tables:
-            # djc = DOJavaClassMako(self, t.java_class)
-            # djc.generator()
-            # self.add_class(djc)
 
         # for a in module.actions:
-        #     vjc = VOJavaClassMako(self, a.response.java_class)
-        #     vjc.generator()
-        #     self.add_class(vjc)
 
-    def write_prject(self):
+
+    def _write_prject(self):
         ## 1.create pom
         template = Template(filename = path + '/tl/pom/admin.tl', input_encoding='utf-8')
         buf = StringIO()
@@ -494,20 +542,14 @@ class ControllerJavaProject(JavaProject):
     def __init__(self, module):
         super(ControllerJavaProject, self).__init__('Controller', module)
 
-    def generator(self, module):
-        """解析元数据生成代码和项目相关信息
+    def _add_class(self, module):
+        """解析元数据生成代码
         """
         # for t in module.tables:
-            # djc = DOJavaClassMako(self, t.java_class)
-            # djc.generator()
-            # self.add_class(djc)
 
         # for a in module.actions:
-        #     vjc = VOJavaClassMako(self, a.response.java_class)
-        #     vjc.generator()
-        #     self.add_class(vjc)
 
-    def write_prject(self):
+    def _write_prject(self):
         ## 1.create pom
         template = Template(filename = path + '/tl/pom/controller.tl', input_encoding='utf-8')
         buf = StringIO()

@@ -50,7 +50,7 @@ class Module(object):
         self._modules = []
 
     def add_module(self, module):
-        """添加自动以模块
+        """添加自定义模块
         """
         self._modules.append(module)
         return self
