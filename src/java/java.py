@@ -60,6 +60,33 @@ class Java(Language):
     def class_name(self):
         pass
 
+class JavaMethod(Java):
+    def __init__(self, method_name, comment):
+        super(JavaMethod, self).__init__()
+        self._annotations = []
+        self._method_name = method_name
+        self._return = None
+        self._params = []
+        self._comment = comment
+    @property
+    def method_name(self):
+        return self._method_name
+    @property
+    def annotations(self):
+        return '/n'.join(self._annotations)
+    @property
+    def comment(self): 
+        return self._comment
+    def add_annotations(self, annotation):
+        self._annotations.append(annotation)
+        return self
+    def add_params(self, param):
+        self._params.append(param)
+        return self
+    def set_return(self, re):
+        self._return = re
+        return self
+    
 class JavaField(Java):
     def __init__(self, field_name, db_type, comment):
         super(JavaField, self).__init__()
@@ -67,6 +94,7 @@ class JavaField(Java):
         self._db_type = db_type
         self._type = parse_type(db_type) 
         self._comment = comment
+
     def __str__(self):
         return 'JavaField:%s, %s ' % (self._filed_name, self._type)
     __repr__ = __str__
@@ -120,21 +148,20 @@ class JavaClass(Java):
         self._package = ''
         self._class_name = class_name
         self._class_name_suffix = ''
+        self._class_name_prefix = ''
         self._fields = []
         self._id_field = None
         self._comment = comment
-
+        self._methods = []
+        self._annotations =[]
 
     def __str__(self):
         return 'fields = %s' % (self._fields)
     __repr__ = __str__
 
-    # @workspace.setter
-    # def workspace(self, workspace):
-    #     self._params['workspace'] = workspace
     @property
     def class_name(self):
-        return convert(self._class_name, '_', True) + self._class_name_suffix
+        return self._class_name_prefix + convert(self._class_name, '_', True) + self._class_name_suffix
     @property
     def original_class_name(self):
         return convert(self._class_name, '_', True)
@@ -143,7 +170,7 @@ class JavaClass(Java):
         return self._class_name
     @property
     def package(self):
-        return '.'.join([self.project_package, self._package.replace('-',)])
+        return '.'.join(filter(lambda x: len(x) >0 ,[self.project_package, self._package]))
     @property
     def project_package(self):
         return self._project.package
@@ -166,19 +193,38 @@ class JavaClass(Java):
     @property
     def comment(self):
         return self._comment
-
+    @property
+    def annotations(self):
+        return '/n'.join(self._annotations)
+    @property
+    def methods(self):
+        return self._methods
     def add_fields(self, field):
         if field is not None :
             self._fields.append(field)
             if field.is_id:
                 self._id_field = field
         return self
+
+    def add_method(self, method):
+        if method is not None :
+            self._methods.append(method)
+        return self
+
+    def add_annotations(self, annotation):
+        if annotation is not None :
+            self._annotations.append(annotation)
+        return self
+    
     def set_package(self, package):
         self._package = package
         return self
 
     def set_class_name_suffix(self, suffix):
         self._class_name_suffix = suffix
+        return self
+    def set_class_name_prefix(self,prefix):
+        self._class_name_prefix = prefix
         return self
 
     def set_project(self, project):
@@ -190,6 +236,7 @@ class JavaClass(Java):
 
     def copy(self):
         return copy.deepcopy(self)
+
 
 class ClassField(object):
     def __init__(self, name):
@@ -217,6 +264,7 @@ class JavaClassLanguageMapping(LanguageMapping):
         self._vo_field_mapping = {}
 
         for key, module in  modules.items():
+            module.java_classes = []
             for t in module.tables:
                 jc = JavaClass(t.name, t.comment)
                 self._do_mapping[jc.class_name] = jc
@@ -237,8 +285,13 @@ class JavaClassLanguageMapping(LanguageMapping):
 
             for root_path, g in groupby(module.actions,key=lambda x:x.module_root):
                 acs = list(g)
-                print(root_path)
+                cj = JavaClass(root_path.split('/')[3],'')
+                cj.add_annotations('@RequestMapping("' + root_path + '")')
+                module.java_classes.append(cj)
                 for a in acs:
+                    jm = JavaMethod(a.name, '')
+                    cj.add_method(jm)
+                    jm.add_annotations(self.get_controller_mapping(a))
                     # jc = JavaClass(None, a)
                     # self._do_mapping[jc.class_name] = jc
                     # if url_path.after_module_name() == '' :
@@ -266,6 +319,25 @@ class JavaClassLanguageMapping(LanguageMapping):
             # print(self._do_mapping)
             # print(self._vo_mapping)
             # analytic(self._do_field_mapping, self._vo_field_mapping)
+    def get_controller_mapping(self, a):
+        mapping = '@' + firstUpower(a.http_method) + 'Mapping'
+        url = a.url.replace(a.module_root,'')
+        if len(url) > 0:
+            mapping += '("'+url+'")'
+        return mapping
+    def get_controller_method_params(self, a):
+        params = ''
+        for n in self.get_path_variable_name():
+            params += '@PathVariable Long ' + n +', '
+        if self.has_request():
+            if self.http_method != 'GET':
+                params += '@RequestBody '
+            params += self.class_name + 'DTO dto'
+        if params.endswith(', '):
+            params = params[:-2]
+        if self.response_type == entity.ACTION_RESPONSE_TYPE['PAGE']:
+            params += ', PageData pagination'
+        return params
 
 def analytic(do_field_mapping, vo_field_mapping):
     print(do_field_mapping, vo_field_mapping)
@@ -332,6 +404,12 @@ class VOJavaClassMako(JavaClassMako):
         java_class.set_package('vo')
         java_class.set_class_name_suffix('VO')
 
+class DTOJavaClassMako(JavaClassMako):
+    def __init__(self, project, java_class):
+        super(DTOJavaClassMako, self).__init__(project, java_class, path + '/tl/api/dto.tl')
+        java_class.set_package('dto')
+        java_class.set_class_name_suffix('DTO')
+
 class MapperJavaClassMako(JavaClassMako):
     def __init__(self, project, java_class):
         super(MapperJavaClassMako, self).__init__(project, java_class, path + '/tl/service/mapper.tl')
@@ -343,6 +421,13 @@ class MapperXmlMako(ResourceMako):
         super(MapperXmlMako, self).__init__(project, java_class, path + '/tl/service/mapperXml.tl')
         java_class.set_package('repository.mapper')
         java_class.set_class_name_suffix('Mapper')
+
+class AdminControllerMako(JavaClassMako):
+    def __init__(self, project, java_class):
+        super(AdminControllerMako, self).__init__(project, java_class, path + '/tl/controller/adminController.tl')
+        # java_class.set_package('admin.controller')
+        java_class.set_class_name_suffix('Controller')
+        java_class.set_class_name_prefix('Admin')
 
 class JavaModule(Module):
 
@@ -415,11 +500,11 @@ class JavaProject(Project):
 
     @property
     def package(self):
-        return '.'.join([CONTEXT.package, self._module.name, self.name])
+        return '.'.join([CONTEXT.package, self._module.name, self.name.replace('-', '.')])
 
     @property
     def package_path(self):
-        return self.java_src + CONTEXT.separator + self.package.replace('.', CONTEXT.separator)
+        return self.java_src + CONTEXT.separator + self.package.replace('.', CONTEXT.separator).replace('-', CONTEXT.separator)
 
     @property
     def path(self):
@@ -525,7 +610,8 @@ class AdminControllerJavaProject(JavaProject):
         """
         # for t in module.tables:
 
-        # for a in module.actions:
+        for jc in module.java_classes:
+            self.add_class(AdminControllerMako(self, jc.copy()))                
 
 
     def _write_prject(self):
@@ -540,7 +626,7 @@ class AdminControllerJavaProject(JavaProject):
 
 class ControllerJavaProject(JavaProject):
     def __init__(self, module):
-        super(ControllerJavaProject, self).__init__('Controller', module)
+        super(ControllerJavaProject, self).__init__('controller', module)
 
     def _add_class(self, module):
         """解析元数据生成代码

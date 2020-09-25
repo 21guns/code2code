@@ -122,7 +122,7 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 				if not url.startswith('/') :
 					print('\033[1;32;43m url is error 第%d行 行内容 %s \033[0m' % (i,url))
 					continue
-				current_action.url(url)
+				current_action.url = url
 				#根据url的第三级目录分析模块英文名称
 				# if modules.get(current_action.module_name()) is not None:
 				# 	current_module = modules[current_action.module_name()]
@@ -133,7 +133,7 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 
 			if line.find('HTTP Method') != -1:# - HTTP Method: `GET`
 				phase = Interface_Phase.Method
-				current_action.http_method(line.split(':')[-1].lstrip().rstrip())
+				current_action.http_method = line.split(':')[-1].lstrip().rstrip()
 		# 		# print(current_action)
 			if line.find('请求参数格式') != -1:#  - 请求参数格式: `QUERY STRING`
 			# 	current_action.request_type(line.split(':')[-1])

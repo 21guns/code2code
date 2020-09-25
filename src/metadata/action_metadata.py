@@ -63,7 +63,7 @@ class UrlPath(Metadata):
             return self.last_path()
 
     def path_name(self, begin, step):
-        return ''.join(map(firstUpower, self._not_path_variable[begin:step]))
+        return ''.join(map(lambda x: x.replace('-','') ,map(firstUpower, self._not_path_variable[begin:step])))
 
     def after_module_name(self):
         return self.path_name(4, len(self._path))
@@ -152,6 +152,10 @@ class Action(Metadata):
         return 'name = %s, request = %s, response = %s ' % (self.name, self._request, self._response)
     __repr__ = __str__
 
+    @property
+    def url(self):
+        return self._url_path.url
+    @url.setter
     def url(self, url):
         self._url_path = UrlPath(self._name, url)
         self._request.url(self._url_path)
@@ -176,7 +180,10 @@ class Action(Metadata):
     @property
     def module_root(self):
         return self._url_path._module_root
-        
+    @property
+    def http_method(self):
+        return self._request.get_method()
+    @http_method.setter    
     def http_method(self, http_method):
         self._request.set_method(http_method)
 
