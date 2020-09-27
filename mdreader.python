@@ -136,8 +136,8 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 				current_action.http_method = line.split(':')[-1].lstrip().rstrip()
 		# 		# print(current_action)
 			if line.find('请求参数格式') != -1:#  - 请求参数格式: `QUERY STRING`
-			# 	current_action.request_type(line.split(':')[-1])
 				phase = Interface_Phase.RequestType
+				current_action.request_type = line.split(':')[-1].lstrip().rstrip()
 
 			if line.find('请求参数') != -1:#  - 请求参数字段
 				phase = Interface_Phase.RequestParamter
@@ -152,8 +152,8 @@ with open('./template/设计规范/接口文档规范.md', 'r') as interfacr_fil
 				# params_type = 'Request
 			if line.find('响应类型') != -1:#  - 响应类型
 				phase = Interface_Phase.ResponseType
-		# 		# print(line.split(':')[-1])
-		# 		current_action.set_response_type(line.split(':')[-1])
+				# print(line.split(':')[-1])
+				current_action.response_type = line.split(':')[-1].lstrip().rstrip()
 		# 		pass
 
 			if line.find('响应字段') != -1:#  - 响应字段

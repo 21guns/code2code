@@ -20,17 +20,16 @@ import com.guns21.data.domain.result.PageData;
 @Slf4j
 ${java_class.annotations}
 public class ${java_class.class_name} {
-
 	% for a in java_class.methods:
-
+	
 	/**
  	 * ${a.comment}
 	 */
 	${a.annotations}
-    public MessageResult ${a.method_name}() {
+    public MessageResult ${a.method_name}(${a.params}) {
 
 		return MessageResult.success();
-	} 
+	}
 	% endfor
 
 }
