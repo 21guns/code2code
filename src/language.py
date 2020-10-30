@@ -27,5 +27,6 @@ class LanguageMapping(object):
     def __init__(self):
         pass
 
-    def mapping(self, moudles):
-        pass
+    def mapping(self, moudles = {}):
+        
+        return moudles

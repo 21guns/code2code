@@ -245,7 +245,6 @@ class JavaClass(Java):
     def copy(self):
         return copy.deepcopy(self)
 
-
 class ClassField(object):
     def __init__(self, name):
         self._name = convert(name, '_', True)
@@ -261,41 +260,57 @@ class ClassField(object):
     def name(self):
         return self._name
 
+class MappingResult(object):
+    def __init__(self, name,):
+        self._name = name
+        self._entity =[]
+        self._request = []
+        self._response = []
+        self._action = []
+    @property
+    def entity(self):
+        return self._entity
+    @property
+    def request(self):
+        return self._request
+    @property
+    def response(self):
+        return self._response
+    @property
+    def action(self):
+        return self._action
+    def add_entity(self, entity):
+        self._entity.append(entity)  
+    def add_request(self, request):
+        self._request.append(request)
+    def add_response(self, response):
+        self._response.append(response)
+    def add_action(self, action):
+        self._action.append(action)
+
 class JavaClassLanguageMapping(LanguageMapping):
 
     def mapping(self, modules):
-        self._do_mapping = {}
-        self._vo_mapping = {}
-        self._dto_mapping = {}
 
-        self._do_field_mapping = {}
-        self._vo_field_mapping = {}
-
+        mapping_result = {}
         for key, module in  modules.items():
+            mr = MappingResult(key)
+            mapping_result[key] = mr
             for t in module.tables:
                 jc = JavaClass(convert(t.name, '_', True), t.comment)
-                self._do_mapping[jc.class_name] = jc
-                t.java_class = jc
-                jc.metadata = t
-
-                cf = ClassField(t.name)
-                self._do_field_mapping[cf.name] = cf
                 for f in t.fields:
                     otherType = f.type.split('(')[0]
                     f_name = convert(f.name,'_',False)
                     jf = JavaField(f.name, otherType, f.get_note())
                     jf.metadata = f
                     jc.add_fields(jf)
+                mr.add_entity(jc)
 
-                    cf.add_field(f_name)
-                pass
-
-            module.java_classes = []
             for root_path, g in groupby(module.actions,key=lambda x:x.module_root):
                 acs = list(g)
                 cj = JavaClass(convert(root_path.split('/')[3], '_', True),'')
                 cj.add_annotations('@RequestMapping("' + root_path + '")')
-                module.java_classes.append(cj)
+                mr.add_action(cj)
                 for a in acs:
                     jm = JavaMethod(self.get_method_name(a), '')
                     cj.add_method(jm)
@@ -304,47 +319,34 @@ class JavaClassLanguageMapping(LanguageMapping):
                     # jc = JavaClass(None, a)
                     # self._do_mapping[jc.class_name] = jc
                     # if url_path.after_module_name() == '' :
-                    a.request.java_classes = []
                     for g, ps in groupby(a.request.params,key=lambda x:x.group):
                         jc = None
                         if (g == action_metadata.Paramter.DEFAULT_GROUP):
                             jc = JavaClass(a.request.path_name, '')
                         else :
                             jc = JavaClass(g, '')
-                        a.request.java_classes.append(jc)
+                        mr.add_request(jc)
                         for p in list(ps):
                             f_name = convert(p.name,'_',False)
                             jf = JavaField(p.name, p.type, p.comment)
-                            jf.field_metadata = f
                             jc.add_fields(jf)
 
-                    #响应参数
-                    # jc = JavaClass(a.name, a.comment)
-                    # self._vo_mapping[a.name] = jc
-                    # a.response.java_class = jc
-                    # jc.class_metadata = a
-
-                    # cf = ClassField(a.name)
-                    # self._vo_field_mapping[a.name] = cf
-                    a.response.java_classes = []
                     for g, ps in groupby(a.response.params,key=lambda x:x.group):
                         jc = None
                         if (g == action_metadata.Paramter.DEFAULT_GROUP):
                             jc = JavaClass(a.response.path_name, '')
                         else :
                             jc = JavaClass(g, '')
-                        a.response.java_classes.append(jc)
+                        mr.add_response(jc)
                         for p in list(ps):
                             f_name = convert(p.name,'_',False)
                             jf = JavaField(p.name, p.type, p.comment)
-                            jf.field_metadata = f
                             jc.add_fields(jf)
-
-                            cf.add_field(f_name)
                         pass
-            # print(self._do_mapping)
-            # print(self._vo_mapping)
+        # print(mapping_result)
         analytic(modules)
+        return mapping_result
+
     def get_controller_mapping(self, action):
         mapping = '@' + firstUpower(action.http_method) + 'Mapping'
         url = action.url.replace(action.module_root,'')
@@ -378,9 +380,9 @@ class JavaClassLanguageMapping(LanguageMapping):
         return action.http_method.lower() + method_name
 
 def analytic(modules):
-    for key, module in  modules.items():       
-        jces = list(map(lambda x:x.java_class, module.tables))
-        print(key, jces)
+    # for key, module in  modules.items():       
+    #     jces = list(map(lambda x:x.java_class, module.tables))
+    #     print(key, jces)
 
     # if url_path.after_module_name() == '' :
         # print(list(map(lambda s: difflib.SequenceMatcher(None, s.lower(), url_path.module_name().lower()).quick_ratio(), class_mapping.keys())))
@@ -601,10 +603,10 @@ class ServiceJavaProject(JavaProject):
     def _add_class(self, module):
         """解析元数据生成代码
         """
-        for t in module.tables:
-            self.add_class(DOJavaClassMako(self, t.java_class.copy()))
-            self.add_class(MapperJavaClassMako(self, t.java_class.copy()))
-            self.add_class(MapperXmlMako(self, t.java_class.copy()))
+        for t in module.entity:
+            self.add_class(DOJavaClassMako(self, t.copy()))
+            self.add_class(MapperJavaClassMako(self, t.copy()))
+            self.add_class(MapperXmlMako(self, t.copy()))
 
         # for a in module.actions:
             # self.add_class(VOJavaClassMako(self, a.response.java_class.copy()))
@@ -627,15 +629,14 @@ class ApiJavaProject(JavaProject):
     def _add_class(self, module):
         """解析元数据生成代码
         """
-        for t in module.tables:
+        for t in module.entity:
             # self.add_class(VOJavaClassMako(self, t.java_class.copy()))
             pass
 
-        for a in module.actions:
-            for jc in a.response.java_classes:
-                self.add_class(VOJavaClassMako(self, jc.copy()))
-            for jc in a.request.java_classes:
-                self.add_class(DTOJavaClassMako(self, jc.copy()))
+        for jc in module.response:
+            self.add_class(VOJavaClassMako(self, jc.copy()))
+        for jc in module.request:
+            self.add_class(DTOJavaClassMako(self, jc.copy()))
 
     def _write_prject(self):
         ## 1.create pom
@@ -654,9 +655,9 @@ class AdminControllerJavaProject(JavaProject):
     def _add_class(self, module):
         """解析元数据生成代码
         """
-        # for t in module.tables:
+        # for t in module.entity:
 
-        for jc in module.java_classes:
+        for jc in module.action:
             self.add_class(AdminControllerMako(self, jc.copy()))                
 
 

@@ -193,7 +193,7 @@ Engine()\
 	.mapping(modules)\
 	.config_module(java.JavaModule)\
 	.add_module(java.ParentModule())\
-	.generator(modules)
+	.generator()
 
 
 
