@@ -5,6 +5,7 @@ package ${java_class.package};
 %>
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,8 +37,11 @@ public class ${java_class.class_name} implements ${class_name}QueryService {
     % if id_field is not None :
     @Override
     public Optional<${class_name}DTO> getById(${id_field.type} id) {
-        
+        % if id_field.type == "String" :
         if (ObjectUtils.hasText(id)) {
+        % elif id_field.type == "Long":
+        if (Objects.nonNull(id)) {
+        % endif
             return mapper.selectById(id);
         }
         return Optional.empty();
