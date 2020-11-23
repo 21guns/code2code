@@ -9,12 +9,13 @@ import java.util.Optional;
 import com.guns21.data.domain.result.PageData;
 
 import ${java_class.module_package}.api.dto.${class_name}DTO;
+import ${java_class.module_package}.api.vo.${class_name}VO;
 
 public interface ${java_class.class_name} {
 
-    List<${class_name}DTO> page(${class_name}DTO query, PageData pagerParams);
+    List<${class_name}VO> page(${class_name}DTO query, PageData pagerParams);
 
     % if id_field is not None :
-    Optional<${class_name}DTO> getById(${id_field.type} id);
+    Optional<${class_name}VO> getById(${id_field.type} id);
     % endif
 }

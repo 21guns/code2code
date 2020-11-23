@@ -5,7 +5,7 @@ from itertools import groupby
 from src.context import *
 from src.metadata import *
 from src.module import *
-from src.engine import Engine
+from src.engine import *
 from src.java import *
 from enum import Enum
 
@@ -188,17 +188,37 @@ if CONTEXT.has_interface_file :
 				else:
 					print('\033[1;32;43m interface line(%s) = %s \033[0m' % (i, line))
 
+
+EngineBuilder()\
+	.reader(MdReader)\
+	.pipleline()\
+	.mapping(java.JavaClassLanguageMapping)\
+	.modules(java.ParentModule,java.JavaModule)\
+	.end()\
+		.build()\
+		.run(CONTEXT)
+	
 # parse()
-Engine()\
-	.reader()\
-	.reader_table().reader_interface()\
-	.config_mapping(java.JavaClassLanguageMapping)\
-	.mapping(modules)\
-	.config_module(java.JavaModule)\
-	.add_module(java.ParentModule())\
-	.generator()
+# Engine()\
+# 	.reader()\
+# 	.reader_table().reader_interface()\
+# 	.config_mapping(java.JavaClassLanguageMapping)\
+# 	.mapping(modules)\
+# 	.config_module(java.JavaModule)\
+# 	.add_module(java.ParentModule())\
+# 	.generator()
 
-
+# Engine()\
+# 	.reader(MdReader())\
+# 	.pipleline()\
+# 	.mapping(JavaClassLanguageMapping())\
+# 	.model(java.ParentModule(),java.JavaModule())
+# 	.end()\
+# 	.pipleline()\
+# 	.mapping(JavaClassLanguageMapping())\
+# 	.model(java.ParentModule(),java.JavaModule())
+# 	.end()\
+# 	.run()
 
 
 	# if current_action != None:

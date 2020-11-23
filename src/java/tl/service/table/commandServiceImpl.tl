@@ -1,5 +1,7 @@
 package ${java_class.package};
 <%
+    has_id = java_class.has_id
+    id_field =java_class.id_field
     class_name =java_class.original_class_name
 %>
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,25 +26,26 @@ public class ${java_class.class_name} implements ${class_name}CommandService {
 
 	@Override
 	public 	MessageResult save(${class_name}DTO dto) {
-	    return AssemblerFactory.toOptional(dto, ${class_name}DO.class)
-	    .map(doo -> {
-			repository.save(doo);
+	    return Optional.ofNullable(dto)
+	    .map(entity -> {
+			repository.save(${class_name}DO.from(entity));
 			return MessageResult.success();
 		}).orElse(MessageResult.fail());
 	}
 
 	@Override
-	public 	MessageResult update(${class_name}DTO dto) {
-	    return AssemblerFactory.toOptional(dto, ${class_name}DO.class)
-			.map(doo -> {
-			repository.update(doo);
+	public 	MessageResult updateByPrimaryKey(${class_name}DTO dto) {
+		return Optional.ofNullable(dto)
+	    .map(entity -> {
+			repository.updateByPrimaryKey(${class_name}DO.from(entity));
 			return MessageResult.success();
 		}).orElse(MessageResult.fail());
 	}
-
+    % if has_id:
 	@Override
-	public MessageResult deleteById(String id) {
-		repository.deleteById(id);
+	public MessageResult deleteByPrimaryKey(${id_field.type} ${id_field.name}) {
+		repository.deleteByPrimaryKey(id);
 		return MessageResult.success();
 	}
+	% endif
 }

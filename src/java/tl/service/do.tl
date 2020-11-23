@@ -28,12 +28,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.io.Serializable;
+
 % for a in java_class.fields:
 	% if a.name in []:
 		<% enumType = table.entity_name+a.name[0].upper() + a.name[1:] + "Enum" %>
-import com.${package_name}.${module_name}.api.enums.${enumType};
+import ${java_class.module_package}.api.enums.${enumType};
 	% endif
 % endfor
+import ${java_class.module_package}.api.dto.${java_class.original_class_name}DTO;
+
 /**
  * ${java_class.comment}
  */
@@ -89,9 +92,15 @@ public class ${class_name} implements Serializable {
 	%endif
 % endfor
 
+	public static ${class_name} from(${java_class.original_class_name}DTO dto) {
+		return  ${class_name}Transformer.INSTANCE.from(dto);
+	}
+
     @Mapper
     public interface  ${class_name}Transformer {
-         ${class_name}Transformer INSTANCE = Mappers.getMapper( ${class_name}Transformer.class);
+        ${class_name}Transformer INSTANCE = Mappers.getMapper( ${class_name}Transformer.class);
+
+		${class_name} from(${java_class.original_class_name}DTO dto);
 
     }
 }

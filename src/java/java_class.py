@@ -71,39 +71,58 @@ class DTOJavaClassMako(JavaClassMako):
 
 class MapperJavaClassMako(JavaClassMako):
     def __init__(self, project, java_class):
-        super(MapperJavaClassMako, self).__init__(project, java_class, path + '/tl/service/mapper.tl')
+        super(MapperJavaClassMako, self).__init__(project, java_class, path + '/tl/service/mapper/mapper.tl')
         java_class.set_package('repository.mapper')
         java_class.set_class_name_suffix('Mapper')
 
 class MapperXmlMako(ResourceMako):
     def __init__(self, project, java_class):
-        super(MapperXmlMako, self).__init__(project, java_class, path + '/tl/service/mapperXml.tl')
+        super(MapperXmlMako, self).__init__(project, java_class, path + '/tl/service/mapper/mapperXml.tl')
         java_class.set_package('repository.mapper')
         java_class.set_class_name_suffix('Mapper')
 
 class TableCommandServiceClassMako(JavaClassMako):
     def __init__(self, project, java_class):
-        super(TableCommandServiceClassMako, self).__init__(project, java_class, path + '/tl/service/table/tableCommandService.tl')
+        super(TableCommandServiceClassMako, self).__init__(project, java_class, path + '/tl/service/table/commandService.tl')
         java_class.set_package('command')
         java_class.set_class_name_suffix('CommandService')
 
 class TableCommandServiceImplClassMako(JavaClassMako):
     def __init__(self, project, java_class):
-        super(TableCommandServiceImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/tableCommandServiceImpl.tl')
+        super(TableCommandServiceImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/commandServiceImpl.tl')
         java_class.set_package('command.impl')
         java_class.set_class_name_suffix('CommandServiceImpl')
 
 class TableQueryServiceClassMako(JavaClassMako):
     def __init__(self, project, java_class):
-        super(TableQueryServiceClassMako, self).__init__(project, java_class, path + '/tl/service/table/tableQueryService.tl')
+        super(TableQueryServiceClassMako, self).__init__(project, java_class, path + '/tl/service/table/queryService.tl')
         java_class.set_package('query')
         java_class.set_class_name_suffix('QueryService')
 
 class TableQueryServiceImplClassMako(JavaClassMako):
     def __init__(self, project, java_class):
-        super(TableQueryServiceImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/tableQueryServiceImpl.tl')
+        super(TableQueryServiceImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/queryServiceImpl.tl')
         java_class.set_package('query.impl')
         java_class.set_class_name_suffix('QueryServiceImpl')
+
+class TableRepsoitoryClassMako(JavaClassMako):
+    def __init__(self, project, java_class):
+        super(TableRepsoitoryClassMako, self).__init__(project, java_class, path + '/tl/service/table/repository.tl')
+        java_class.set_package('repository')
+        java_class.set_class_name_suffix('Repository')
+
+class TableRspositoryImplClassMako(JavaClassMako):
+    def __init__(self, project, java_class):
+        super(TableRspositoryImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/repositoryImpl.tl')
+        java_class.set_package('repository.impl')
+        java_class.set_class_name_suffix('RepositoryImpl')
+
+class TableAdminControllerMako(JavaClassMako):
+    def __init__(self, project, java_class):
+        super(TableAdminControllerMako, self).__init__(project, java_class, path + '/tl/controller/table/adminController.tl')
+        # java_class.set_package('admin.controller')
+        java_class.set_class_name_suffix('Controller')
+        java_class.set_class_name_prefix('Admin')
 
 
 class AdminControllerMako(JavaClassMako):

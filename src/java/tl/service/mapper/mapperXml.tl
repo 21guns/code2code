@@ -66,6 +66,10 @@
 		${',\n\t\t'.join(colums_as) }
   	</sql>
 
+    <select id="pageList" resultMap="${class_name}ResultMap">
+    	SELECT <include refid="columns_as" /> FROM ${table_name}
+    </select>
+
 % if java_class.has_id :
     <select id="selectByPrimaryKey" parameterType="${java_class.id_field.type}" resultMap="${class_name}ResultMap">
         SELECT

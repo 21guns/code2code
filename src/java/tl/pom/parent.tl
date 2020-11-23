@@ -19,7 +19,7 @@
 	</parent>
 
 	<properties>
-		<org.mapstruct.version>1.3.1.Final</org.mapstruct.version>
+		<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<docker-maven-plugin.version>1.3.0</docker-maven-plugin.version>
 		<release.version>0.0.1-SNAPSHOT</release.version> <!-- 仅仅为了在idea中关联依赖时使用-->
@@ -113,7 +113,7 @@
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>support</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
@@ -158,7 +158,7 @@
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>jackson-mixin</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
@@ -168,7 +168,7 @@
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>open-feign</artifactId>
-				<version>2.0.0</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.binarywang</groupId>

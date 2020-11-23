@@ -39,6 +39,10 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
 		<groupId>${package_name}.${module_name}</groupId>
 			<artifactId>service</artifactId>
 			<version>${v}</version>

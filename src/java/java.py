@@ -531,6 +531,8 @@ class ServiceJavaProject(JavaProject):
                 self.add_class(TableCommandServiceImplClassMako(self, t.copy()))
                 self.add_class(TableQueryServiceClassMako(self, t.copy()))
                 self.add_class(TableQueryServiceImplClassMako(self, t.copy()))
+                self.add_class(TableRepsoitoryClassMako(self, t.copy()))
+                self.add_class(TableRspositoryImplClassMako(self, t.copy()))
 
         # for a in module.actions:
             # self.add_class(VOJavaClassMako(self, a.response.java_class.copy()))
@@ -583,7 +585,10 @@ class AdminControllerJavaProject(JavaProject):
     def _add_class(self, module):
         """解析元数据生成代码
         """
-        # for t in module.entity:
+        for t in module.entity:
+            #没有接口文档时
+            if not CONTEXT.has_interface_file :
+                self.add_class(TableAdminControllerMako(self, t.copy()))
 
         for jc in module.action:
             self.add_class(AdminControllerMako(self, jc.copy()))                
