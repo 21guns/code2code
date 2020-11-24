@@ -3,7 +3,7 @@
 # 项目介绍
 参考DDD，CQRS架构，生成基于Spring boot Mybatis的微服务架构的代码
 
-## core代码继承关系
+## src代码继承关系
 ```
 - 标准文档解析后的元数据
 metadata 

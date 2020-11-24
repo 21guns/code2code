@@ -6,6 +6,7 @@ package ${java_class.package};
 %>
 import java.util.Optional;
 import java.util.Objects;
+import com.guns21.common.util.ObjectUtils;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.beans.factory.annotation.Autowired;

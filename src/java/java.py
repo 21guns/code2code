@@ -186,7 +186,9 @@ class JavaClass(Java):
     @property
     def module_package(self):
         return self._project.module.package
-              
+    @property
+    def module_name(self):
+        return self._project.module.name         
     @property
     def file_name(self):
         return self.class_name + '.' + self.name
@@ -290,6 +292,8 @@ class MappingResult(object):
         self._action.append(action)
 
 class JavaClassLanguageMapping(LanguageMapping):
+    def __init__(self):
+        super(JavaClassLanguageMapping, self).__init__()
 
     def mapping(self, modules):
 
@@ -392,15 +396,36 @@ def analytic(modules):
 
     pass
 
+class JavaWorkspaceModule(Module):
+    def __init__(self):
+        super(JavaWorkspaceModule, self).__init__('workspace')
+        self._modules = []
+    
+    def _init_modules(self, mapping_result):
+        self._modules.append(ParentModule())
+        for key, mr in mapping_result.items():
+            self._modules.append(JavaModule(key, mr))
+
+    def generator(self, mapping_result):
+        self._init_modules(mapping_result)
+
+        for module in self._modules:
+            module.generator()
+    
+    def write_file(self):
+        for module in self._modules:
+            module.write_file()
+
 class JavaModule(Module):
 
-    def __init__(self, name):
+    def __init__(self, name, module):
         super(JavaModule, self).__init__(name)
         ## add template project 
         self._projects.append(ServiceJavaProject(self))
         self._projects.append(ApiJavaProject(self))
         self._projects.append(AdminControllerJavaProject(self))
         self._projects.append(ControllerJavaProject(self))
+        self._module = module
 
     @property       
     def path(self):
@@ -409,9 +434,9 @@ class JavaModule(Module):
     def package(self):
         return '.'.join([CONTEXT.package, self.name])
 
-    def generator(self, module):
+    def generator(self, module= {}):
         for p in self._projects:
-            p.generator(module)
+            p.generator(module if len(module) > 0 else self._module)
 
         pass
     
@@ -449,7 +474,10 @@ class ParentModule(Module):
         buf = StringIO()
         ctx = Context(buf, package_name = CONTEXT.package)
         template.render_context(ctx)
-        with open(self.path + CONTEXT.separator + 'pom.xml', 'w') as f:
+        pomPath = self.path + CONTEXT.separator + 'pom.xml'
+        if os.path.exists(pomPath):
+            return   
+        with open(pomPath, 'w') as f:
             f.write(buf.getvalue())
             f.close()
 

@@ -1,12 +1,6 @@
 from . import module, context
-from . import language
+from . import language, reader
 
-class Reader(object):
-    def __init__(self, engine):
-        self._engine = engine
-
-    def reader(self, context = context.Context()):
-        pass
 
 class EngineBuilder(object):
     def __init__(self):
@@ -15,7 +9,7 @@ class EngineBuilder(object):
         self._reader_cfg = None 
         self._pipeline_cfg = []
 
-    def reader(self, reader = Reader):
+    def reader(self, reader = reader.Reader):
         self._reader_cfg = reader
         return self
 
@@ -26,9 +20,8 @@ class EngineBuilder(object):
 
     def build(self):
         self._engine = Engine()
-        self._engine.reader = self._reader_cfg(self._engine)
-        for pip in self._pipeline_cfg:
-            pass
+        self._engine.reader(self._reader_cfg(self._engine))\
+            .pipeline(list(map(lambda p:p.build(self._engine), self._pipeline_cfg)))
 
         return self._engine
              
@@ -37,6 +30,7 @@ class PipelineBuilder(object):
         self._language_mapping_cfg = None
         self._modules_cfg = []
         self._engine_builder = engine_builder
+        self._pipeline = None
 
     def mapping(self, language_mapping = language.LanguageMapping):
         self._language_mapping_cfg = language_mapping
@@ -55,6 +49,12 @@ class PipelineBuilder(object):
     def get_modules(self):
         return self._modules_cfg
 
+    def build(self, engine):
+        self._pipeline = Pipeline(engine)
+        self._pipeline.mapping(self._language_mapping_cfg())\
+            .modules(list(map(lambda m: m(), self._modules_cfg)))
+        return self._pipeline
+            
 class Pipeline(object):
     def __init__(self, engine):
         self._language_mapping = None
@@ -65,27 +65,29 @@ class Pipeline(object):
         self._language_mapping = language_mapping
         return self
 
-    def modules(self, *modules ):
+    def modules(self, modules ):
         self._modules = modules
         return self
 
-    def run(self, **modules):
+    def run(self, modules):
         mapping_result = self._language_mapping.mapping(modules)
 
+        for module in self._modules:
+            module.generator(mapping_result)
+
         ##生成内容
-        for key, module in  mapping_result.items():
-            _module.generator(module)
+        # for key, module in  mapping_result.items():
+        #     module.generator(module)
 
         ##写入文件
         for m in self._modules:
             m.write_file()
         pass    
 
-    @property
-    def mapping(self):
+    def get_mapping(self):
         return self._language_mapping
-    @property
-    def modules(self):
+    
+    def get_modules(self):
         return self._modules
 
 class Engine(object):
@@ -95,20 +97,19 @@ class Engine(object):
 
     def run(self, context):
         modules = self._reader.reader(context)
-        print(modules)
         for pipeline in self._pipeline:
             pipeline.run(modules) 
 
     @property
     def reader(self):
         return self._reader
-    @reader.setter
+
     def reader(self, reader):
         self._reader = reader
-
-class MdReader(Reader):
-    def __init__(self, engine):
-        super(MdReader, self).__init__(engine)
-
-    def reader(self, context = context.Context()):
-        pass
+        return self
+    def pipeline(self, pipeline):
+        self._pipeline = pipeline
+        return self
+    def add_pipeline(self, pipeline):
+        self._pipeline.append(pipeline)
+        return self

@@ -8,8 +8,8 @@ class Module(object):
     @property
     def name(self):
         return self._name
-        
-    def generator(self, module ):
+
+    def generator(self, module={}):
         pass
     
     def write_file(self):
