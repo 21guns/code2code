@@ -74,14 +74,14 @@
     </select>
 
 % if java_class.has_id :
-    <select id="selectByPrimaryKey" parameterType="${java_class.id_field.type}" resultMap="${class_name}ResultMap">
+    <select id="selectByPrimaryKey" parameterType="${java_class.id_field.full_type}" resultMap="${class_name}ResultMap">
         SELECT
         <include refid="columns" />
         FROM ${table_name}
         WHERE id = #{id,jdbcType=${java_class.id_field.jdbc_type}}
     </select>
 
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    <delete id="deleteByPrimaryKey" parameterType="${java_class.id_field.full_type}">
         DELETE FROM ${table_name} WHERE id = #{id,jdbcType=${java_class.id_field.jdbc_type}}
     </delete>
 % endif

@@ -7,12 +7,10 @@ import os
 
 path = os.path.dirname(os.path.abspath(__file__))# get this file path
 
-class JavaClassMako(object):
-    def __init__(self, project, java_class, tl_file):
-        self._template = Template(filename = tl_file,  input_encoding='utf-8')
+class JavaClass(object):
+    def __init__(self, project, java_class):
         self._project = project
         self._java_class = java_class.set_project(project)
-
     @property
     def class_path(self):
         return self._project.java_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
@@ -21,13 +19,32 @@ class JavaClassMako(object):
         pass
 
     def write_file(self):
+        pass
+
+
+class JavaClassMako(JavaClass):
+    def __init__(self, project, java_class, tl_file):
+        super(JavaClassMako, self).__init__(project, java_class)
+        self._template = Template(filename = tl_file,  input_encoding='utf-8')
+        self._buf = None
+
+    @property
+    def class_path(self):
+        return self._project.java_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
+
+    def generator(self):
+        self._buf = StringIO()
+        ctx = Context(self._buf, java_class = self._java_class)
+        self._template.render_context(ctx)
+        pass
+
+    def write_file(self):
+        if (self._buf is None):
+            return
         if not os.path.exists(self.class_path):
             os.makedirs(self.class_path)
-        buf = StringIO()
-        ctx = Context(buf, java_class = self._java_class)
-        self._template.render_context(ctx)
         with open(self.class_path + CONTEXT.separator + self._java_class.file_name, 'w') as f:
-            f.write(buf.getvalue())
+            f.write(self._buf.getvalue())
             f.close()
 
 class ResourceMako(JavaClassMako):
@@ -41,13 +58,12 @@ class ResourceMako(JavaClassMako):
 
 
     def write_file(self):
+        if (self._buf is None):
+            return
         if not os.path.exists(self.resource_path):
             os.makedirs(self.resource_path)
-        buf = StringIO()
-        ctx = Context(buf, java_class = self._java_class)
-        self._template.render_context(ctx)
         with open(self.resource_path + CONTEXT.separator + self._java_class.file_name, 'w') as f:
-            f.write(buf.getvalue())
+            f.write(self._buf.getvalue())
             f.close()
 
 class DOJavaClassMako(JavaClassMako):
@@ -68,6 +84,35 @@ class DTOJavaClassMako(JavaClassMako):
         super(DTOJavaClassMako, self).__init__(project, java_class, path + '/tl/api/dto.tl')
         java_class.set_package('dto')
         java_class.set_class_name_suffix('DTO')
+
+class EnumJavaClassMako(JavaClassMako):
+    def __init__(self, project, java_class):
+        super(EnumJavaClassMako, self).__init__(project, java_class, path + '/tl/api/enum.tl')
+        java_class.set_package('enums')
+        java_class.set_class_name_suffix('Enum')
+
+    def generator(self):
+        for field in self._java_class.fields:
+            if field.name in ['type','status']:
+                enums = []
+                string_list = str(field.note).split(',')
+                if len(string_list) > 0:
+                    for n in string_list:
+                        # if  len(n) >0:
+                        # print(string_list)
+                        string_list = str(n).split(':')
+                        if len(string_list) == 2: 
+                            f = enum(string_list[0],string_list[1])
+                            if f is not None:
+                                enums.append(f)
+                        else:
+                            print('enums error table(%s) field(%s), %s' % (self._java_class.metadata_name,field.name, string_list))
+        pass
+
+    def write_file(self):
+
+        pass
+
 
 class MapperJavaClassMako(JavaClassMako):
     def __init__(self, project, java_class):

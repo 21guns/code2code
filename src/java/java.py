@@ -174,10 +174,10 @@ class JavaClass(Java):
 
     @property
     def class_name(self):
-        return self._class_name_prefix + self._class_name + self._class_name_suffix
+        return self._class_name_prefix + self.original_class_name + self._class_name_suffix
     @property
     def original_class_name(self):
-        return self._class_name
+        return convert(self._class_name,'_', True)
     @property
     def metadata_name(self):
         return self._class_name
@@ -314,10 +314,9 @@ class JavaClassLanguageMapping(LanguageMapping):
             mr = MappingResult(key)
             mapping_result[key] = mr
             for t in module.tables:
-                jc = JavaClass(convert(t.name, '_', True), t.comment)
+                jc = JavaClass(t.name, t.comment)
                 for f in t.fields:
                     otherType = f.type.split('(')[0]
-                    f_name = convert(f.name,'_',False)
                     jf = JavaField(f.name, otherType, f.get_note())
                     jf.metadata = f
                     jc.add_fields(jf)
@@ -325,7 +324,7 @@ class JavaClassLanguageMapping(LanguageMapping):
 
             for root_path, g in groupby(module.actions,key=lambda x:x.module_root):
                 acs = list(g)
-                cj = JavaClass(convert(root_path.split('/')[3], '_', True),'')
+                cj = JavaClass(root_path.split('/')[3],'')
                 cj.add_annotations('@RequestMapping("' + root_path + '")')
                 mr.add_action(cj)
                 for a in acs:
@@ -344,7 +343,6 @@ class JavaClassLanguageMapping(LanguageMapping):
                             jc = JavaClass(g, '')
                         mr.add_request(jc)
                         for p in list(ps):
-                            f_name = convert(p.name,'_',False)
                             jf = JavaField(p.name, p.type, p.comment)
                             jc.add_fields(jf)
 
@@ -356,7 +354,6 @@ class JavaClassLanguageMapping(LanguageMapping):
                             jc = JavaClass(g, '')
                         mr.add_response(jc)
                         for p in list(ps):
-                            f_name = convert(p.name,'_',False)
                             jf = JavaField(p.name, p.type, p.comment)
                             jc.add_fields(jf)
                         pass
@@ -600,7 +597,7 @@ class ApiJavaProject(JavaProject):
             if not CONTEXT.has_interface_file :
                 self.add_class(VOJavaClassMako(self, t.copy()))
                 self.add_class(DTOJavaClassMako(self, t.copy()))
-            # self.add_class(VOJavaClassMako(self, t.java_class.copy()))
+                self.add_class(EnumJavaClassMako(self, t.copy()))
             pass
 
         for jc in module.response:
