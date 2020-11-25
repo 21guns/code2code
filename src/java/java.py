@@ -49,7 +49,8 @@ def parse_type(otherType):
     elif type.lower() == 'long':
         type = "Long"
     else:
-        print('\033[1;32;43m parse java type %s \033[0m' % type)
+        type = None
+        # print('\033[1;32;43m parse java type(%s) error \033[0m' % type)
     return type
 
 class Java(Language):
@@ -102,6 +103,8 @@ class JavaField(Java):
         self._field_name = field_name
         self._db_type = db_type
         self._type = parse_type(db_type) 
+        if (self._type is None) :
+            print('\033[1;32;43m parse java type(%s) error for field(%s) \033[0m' % (self._type, self._field_name))
         self._comment = comment
 
     def __str__(self):
@@ -131,9 +134,9 @@ class JavaField(Java):
     @property
     def full_type(self):
         if (self._type in ['String', 'Byte', 'Integer','Long']):
-            return '.'.join('java.lang', self._type)
+            return '.'.join(['java.lang', self._type])
         elif (self._type in ['LocalDateTime', 'LocalDate']):
-            return '.'.join('java.time', self._type)
+            return '.'.join(['java.time', self._type])
         elif (self._type == 'HashMap'):
             return 'java.util.HashMap'
         elif (self._type == 'BigDecimal'):
@@ -163,6 +166,7 @@ class JavaClass(Java):
         self._comment = comment
         self._methods = []
         self._annotations =[]
+        self._imports = []
 
     def __str__(self):
         return 'fields = %s' % (self._fields)
@@ -208,6 +212,9 @@ class JavaClass(Java):
     def annotations(self):
         return '/n'.join(self._annotations)
     @property
+    def imports(self):
+        return '\n'.join(set(self._imports))
+    @property
     def methods(self):
         return self._methods
     def add_fields(self, field):
@@ -215,6 +222,8 @@ class JavaClass(Java):
             self._fields.append(field)
             if field.is_id:
                 self._id_field = field
+            if (not field.full_type.startswith('java.lang')) :
+                self._imports.append('import ' +field.full_type + ';')
         return self
 
     def add_method(self, method):
@@ -226,7 +235,10 @@ class JavaClass(Java):
         if annotation is not None :
             self._annotations.append(annotation)
         return self
-    
+    def add_imports(self, ipo):
+        if ipo is not None :
+            self._imports.append(ipo)
+
     def set_package(self, package):
         self._package = package
         return self

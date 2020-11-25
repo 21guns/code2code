@@ -27,7 +27,7 @@ import ${java_class.module_package}.service.query.${class_name}QueryService;
  */
 @RestController
 @Slf4j
-@RequestMapping("/op/v1/${java_class.module_name}")
+@RequestMapping("/op/v1/${java_class.module_name}/${class_name}")
 public class ${java_class.class_name} {
     @Autowired
 	private ${class_name}QueryService queryService;

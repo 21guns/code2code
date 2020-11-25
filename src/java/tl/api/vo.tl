@@ -8,11 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Objects;
+import java.io.Serializable;
+${java_class.imports}
 
 /**
  * ${java_class.comment}

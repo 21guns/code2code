@@ -52,6 +52,9 @@
 		% for index in  range(len(fields)):
 			% if fields[index].name == "id" :
 		<id column="id" property="id" jdbcType="${fields[index].jdbc_type}" />
+			% elif fields[index].jdbc_type == "JSON" :
+		<result column="${fields[index].field}" property="${fields[index].name}" javaType="java.util.HashMap" 
+				typeHandler="com.guns21.mybatis.JsonTypeHandler"/>
 			% else:
 		<result column="${fields[index].field}" property="${fields[index].name}" jdbcType="${fields[index].jdbc_type}" />
  			% endif 

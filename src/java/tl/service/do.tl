@@ -23,11 +23,8 @@ import lombok.ToString;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Objects;
 import java.io.Serializable;
+${java_class.imports}
 
 % for a in java_class.fields:
 	% if a.name in []:
