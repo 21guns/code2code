@@ -21,6 +21,10 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.guns21</groupId>
+			<artifactId>common</artifactId>
+		</dependency>	
 	</dependencies>
 
 </project>

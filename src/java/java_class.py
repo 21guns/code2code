@@ -1,178 +1,268 @@
-from ..context import *
+from ..language import Language
+from ..utils import *
+import copy
 
-from mako.template import Template
-from mako.runtime import Context
-from io import StringIO
-import os
+def parse_type(otherType):
+    if otherType is None:
+        return None
+    type = otherType
+    if "VARCHAR" in otherType:
+        type = "String"
+    elif "TINYINT" in otherType:
+        type = "Byte"
+    elif "DATETIME" in otherType:
+        type = "LocalDateTime"
+    elif "DATE" in otherType:
+        type = "LocalDate"
+    elif "DECIMAL" in otherType:
+        type = "BigDecimal"
+    elif "INT" == otherType:
+        type = "Integer"
+    elif "BIGINT UNSIGNED" == otherType:
+        type = "Long"
+    elif "BIGINT" == otherType:
+        type = "Long"
+    elif "JSON" == otherType:
+        type = "HashMap"
 
-path = os.path.dirname(os.path.abspath(__file__))# get this file path
+    elif type.lower() == 'string':
+        type = "String"
+    elif type.lower() == 'int':
+        type = "Integer"
+    elif type.lower() == 'date':
+        type = "LocalDateTime"
+    elif type.lower() == 'number':
+        type = "Integer"
+    elif type.lower() == 'boolean':
+        type = "Boolean"
+    elif type.lower() == 'long':
+        type = "Long"
+    else:
+        type = None
+        # print('\033[1;32;43m parse java type(%s) error \033[0m' % type)
+    return type
 
-class JavaClass(object):
-    def __init__(self, project, java_class):
-        self._project = project
-        self._java_class = java_class.set_project(project)
+class Java(Language):
+    def __init__(self):
+        super(Java, self).__init__('java')
+
+    def package(self):
+        pass
+
+    def class_name(self):
+        pass
+
+class JavaMethod(Java):
+    def __init__(self, method_name, comment):
+        super(JavaMethod, self).__init__()
+        self._annotations = []
+        self._method_name = method_name
+        self._return = None
+        self._params = []
+        self._comment = comment
     @property
-    def class_path(self):
-        return self._project.java_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
-
-    def generator(self):
-        pass
-
-    def write_file(self):
-        pass
-
-
-class JavaClassMako(JavaClass):
-    def __init__(self, project, java_class, tl_file):
-        super(JavaClassMako, self).__init__(project, java_class)
-        self._template = Template(filename = tl_file,  input_encoding='utf-8')
-        self._buf = None
-
+    def method_name(self):
+        return self._method_name
     @property
-    def class_path(self):
-        return self._project.java_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
-
-    def generator(self):
-        self._buf = StringIO()
-        ctx = Context(self._buf, java_class = self._java_class)
-        self._template.render_context(ctx)
-        pass
-
-    def write_file(self):
-        if (self._buf is None):
-            return
-        if not os.path.exists(self.class_path):
-            os.makedirs(self.class_path)
-        with open(self.class_path + CONTEXT.separator + self._java_class.file_name, 'w') as f:
-            f.write(self._buf.getvalue())
-            f.close()
-
-class ResourceMako(JavaClassMako):
-    def __init__(self, project, java_class, tl_file):
-        super(ResourceMako, self).__init__(project, java_class, tl_file)
-        java_class.name = 'xml'
+    def annotations(self):
+        return '/n'.join(self._annotations)
+    @property
+    def params(self):
+        return ','.join(self._params)
+    @property
+    def comment(self): 
+        return self._comment
+    def add_annotations(self, annotation):
+        self._annotations.append(annotation)
+        return self
+    def add_params(self, param):
+        if (len(param) > 0):
+            if (isinstance(self._params, list)):
+                self._params.extend(param)
+            else :
+                self._params.append(param)
+        return self
+    def set_return(self, re):
+        self._return = re
+        return self
     
+class JavaField(Java):
+    def __init__(self, field_name, db_type, comment):
+        super(JavaField, self).__init__()
+        self._field_name = field_name
+        self._db_type = db_type
+        self._type = parse_type(db_type) 
+        if (self._type is None) :
+            print('\033[1;32;43m parse java type(%s) error for field(%s) \033[0m' % (self._type, self._field_name))
+        self._comment = comment
+
+    def __str__(self):
+        return 'JavaField:%s, %s ' % (self._field_name, self._type)
+    __repr__ = __str__
+
     @property
-    def resource_path(self):
-        return self._project.resource_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
+    def name(self):
+        return convert(self._field_name,'_',False)
 
+    @property
+    def field(self):
+        return self._field_name
+    @property
+    def type(self):
+        return self._type
 
-    def write_file(self):
-        if (self._buf is None):
-            return
-        if not os.path.exists(self.resource_path):
-            os.makedirs(self.resource_path)
-        with open(self.resource_path + CONTEXT.separator + self._java_class.file_name, 'w') as f:
-            f.write(self._buf.getvalue())
-            f.close()
+    @property
+    def comment(self):
+        return self._comment
+    @property
+    def note(self):
+        return ''
+    @property
+    def is_id(self):
+        return self.name == 'id'
+    @property
+    def full_type(self):
+        if self._type is None:
+            return ''
+        if (self._type in ['String', 'Byte', 'Integer','Long']):
+            return '.'.join(['java.lang', self._type])
+        elif (self._type in ['LocalDateTime', 'LocalDate']):
+            return '.'.join(['java.time', self._type])
+        elif (self._type == 'HashMap'):
+            return 'java.util.HashMap'
+        elif (self._type == 'BigDecimal'):
+            return 'java.math.BigDecimal'
+        else:
+            return self._type
+    @property
+    def jdbc_type(self):
+        if (self._db_type == "INT") :
+            return "INTEGER"
+        elif (self._db_type == "BIGINT UNSIGNED"):
+            return "BIGINT"
+        elif (self._db_type == "DATETIME"):
+            return "TIMESTAMP"
+        return self._db_type
 
-class DOJavaClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(DOJavaClassMako, self).__init__(project, java_class, path + '/tl/service/do.tl')
-        java_class.set_package('entity')
-        java_class.set_class_name_suffix('DO')
+class JavaClass(Java):
+    def __init__(self, class_name, comment):
+        super(JavaClass, self).__init__()
+        self._project = None
+        self._package = ''
+        self._class_name = class_name
+        self._class_name_suffix = ''
+        self._class_name_prefix = ''
+        self._fields = []
+        self._id_field = None
+        self._comment = comment
+        self._methods = []
+        self._annotations =[]
+        self._imports = []
 
+    def __str__(self):
+        return 'fields = %s' % (self._fields)
+    __repr__ = __str__
 
-class VOJavaClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(VOJavaClassMako, self).__init__(project, java_class, path + '/tl/api/vo.tl')
-        java_class.set_package('vo')
-        java_class.set_class_name_suffix('VO')
+    @property
+    def class_name(self):
+        return self._class_name_prefix + self.original_class_name + self._class_name_suffix
+    @property
+    def original_class_name(self):
+        return convert(self._class_name,'_', True)
+    @property
+    def metadata_name(self):
+        return self._class_name
+    @property
+    def package(self):
+        return '.'.join(filter(lambda x: len(x) >0 ,[self.project_package, self._package]))
+    @property
+    def project_package(self):
+        return self._project.package
+    @property
+    def module_package(self):
+        return self._project.module.package
+    @property
+    def module_name(self):
+        return self._project.module.name         
+    @property
+    def file_name(self):
+        return self.class_name + '.' + self.name
+    @property
+    def id_field(self):
+        return self._id_field
+    @property
+    def has_id(self):
+        return self._id_field is not None
+    @property
+    def fields(self):
+        return self._fields
+    @property
+    def comment(self):
+        return self._comment
+    @property
+    def annotations(self):
+        return '/n'.join(self._annotations)
+    @property
+    def imports(self):
+        return '\n'.join(set(self._imports))
+    @property
+    def methods(self):
+        return self._methods
+    def add_fields(self, field):
+        if field is not None :
+            self._fields.append(field)
+            if field.is_id:
+                self._id_field = field
+            if (not field.full_type.startswith('java.lang')) :
+                self._imports.append('import ' +field.full_type + ';')
+        return self
 
-class DTOJavaClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(DTOJavaClassMako, self).__init__(project, java_class, path + '/tl/api/dto.tl')
-        java_class.set_package('dto')
-        java_class.set_class_name_suffix('DTO')
+    def add_method(self, method):
+        if method is not None :
+            self._methods.append(method)
+        return self
 
-class EnumJavaClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(EnumJavaClassMako, self).__init__(project, java_class, path + '/tl/api/enum.tl')
-        java_class.set_package('enums')
-        java_class.set_class_name_suffix('Enum')
+    def add_annotations(self, annotation):
+        if annotation is not None :
+            self._annotations.append(annotation)
+        return self
+    def add_imports(self, ipo):
+        if ipo is not None :
+            self._imports.append(ipo)
+
+    def set_package(self, package):
+        self._package = package
+        return self
+
+    def set_class_name_suffix(self, suffix):
+        self._class_name_suffix = suffix
+        return self
+    def set_class_name_prefix(self,prefix):
+        self._class_name_prefix = prefix
+        return self
+
+    def set_project(self, project):
+        self._project = project
+        return self
 
     def generator(self):
-        for field in self._java_class.fields:
-            if field.name in ['type','status']:
-                enums = []
-                string_list = str(field.note).split(',')
-                if len(string_list) > 0:
-                    for n in string_list:
-                        # if  len(n) >0:
-                        # print(string_list)
-                        string_list = str(n).split(':')
-                        if len(string_list) == 2: 
-                            f = enum(string_list[0],string_list[1])
-                            if f is not None:
-                                enums.append(f)
-                        else:
-                            print('enums error table(%s) field(%s), %s' % (self._java_class.metadata_name,field.name, string_list))
         pass
 
-    def write_file(self):
+    def copy(self):
+        return copy.deepcopy(self)
 
-        pass
+class ClassField(object):
+    def __init__(self, name):
+        self._name = convert(name, '_', True)
+        self._fields = []
+    def __str__(self):
+        return '%s, %s ' % (self._name, self._fields)
+    __repr__ = __str__
 
+    def add_field(self, field):
+        self._fields.append(field)
+        return self
+    @property
+    def name(self):
+        return self._name
 
-class MapperJavaClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(MapperJavaClassMako, self).__init__(project, java_class, path + '/tl/service/mapper/mapper.tl')
-        java_class.set_package('repository.mapper')
-        java_class.set_class_name_suffix('Mapper')
-
-class MapperXmlMako(ResourceMako):
-    def __init__(self, project, java_class):
-        super(MapperXmlMako, self).__init__(project, java_class, path + '/tl/service/mapper/mapperXml.tl')
-        java_class.set_package('repository.mapper')
-        java_class.set_class_name_suffix('Mapper')
-
-class TableCommandServiceClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(TableCommandServiceClassMako, self).__init__(project, java_class, path + '/tl/service/table/commandService.tl')
-        java_class.set_package('command')
-        java_class.set_class_name_suffix('CommandService')
-
-class TableCommandServiceImplClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(TableCommandServiceImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/commandServiceImpl.tl')
-        java_class.set_package('command.impl')
-        java_class.set_class_name_suffix('CommandServiceImpl')
-
-class TableQueryServiceClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(TableQueryServiceClassMako, self).__init__(project, java_class, path + '/tl/service/table/queryService.tl')
-        java_class.set_package('query')
-        java_class.set_class_name_suffix('QueryService')
-
-class TableQueryServiceImplClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(TableQueryServiceImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/queryServiceImpl.tl')
-        java_class.set_package('query.impl')
-        java_class.set_class_name_suffix('QueryServiceImpl')
-
-class TableRepsoitoryClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(TableRepsoitoryClassMako, self).__init__(project, java_class, path + '/tl/service/table/repository.tl')
-        java_class.set_package('repository')
-        java_class.set_class_name_suffix('Repository')
-
-class TableRspositoryImplClassMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(TableRspositoryImplClassMako, self).__init__(project, java_class, path + '/tl/service/table/repositoryImpl.tl')
-        java_class.set_package('repository.impl')
-        java_class.set_class_name_suffix('RepositoryImpl')
-
-class TableAdminControllerMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(TableAdminControllerMako, self).__init__(project, java_class, path + '/tl/controller/table/adminController.tl')
-        # java_class.set_package('admin.controller')
-        java_class.set_class_name_suffix('Controller')
-        java_class.set_class_name_prefix('Admin')
-
-
-class AdminControllerMako(JavaClassMako):
-    def __init__(self, project, java_class):
-        super(AdminControllerMako, self).__init__(project, java_class, path + '/tl/controller/adminController.tl')
-        # java_class.set_package('admin.controller')
-        java_class.set_class_name_suffix('Controller')
-        java_class.set_class_name_prefix('Admin')
