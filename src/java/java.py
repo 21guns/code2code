@@ -1,6 +1,6 @@
-from ..language import Language, LanguageMapping
+from ..language import Language, LanguageMapping, MappingResult
 from ..module import Module, Project
-from ..context import *
+from ..context import CONTEXT
 from ..utils import *
 from ..metadata import *
 from .java_class_file import *
@@ -15,7 +15,7 @@ import difflib
 
 path = os.path.dirname(os.path.abspath(__file__))# get this file path
 
-class MappingResult(object):
+class JavaMappingResult(MappingResult):
     def __init__(self, name,):
         self._name = name
         self._entity =[]
@@ -57,7 +57,7 @@ class JavaClassLanguageMapping(LanguageMapping):
 
         mapping_result = {}
         for key, module in  modules.items():
-            mr = MappingResult(key)
+            mr = JavaMappingResult(key)
             mapping_result[key] = mr
             for t in module.tables:
                 jc = JavaClass(t.name, t.comment)

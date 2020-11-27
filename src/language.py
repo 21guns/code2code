@@ -16,9 +16,6 @@ class Xml(Language):
         super(Xml, self).__init__('xml')
 
 
-class Sql(Language):
-    def __init__(self,):
-        super(Sql, self).__init__('sql')
 
 class LanguageMapping(object):
 
@@ -30,3 +27,10 @@ class LanguageMapping(object):
     def mapping(self, moudles = {}):
         
         return moudles
+
+class MappingResult(object):
+  
+    """映射后的结果集
+    """
+    def __init__(self):
+        pass  

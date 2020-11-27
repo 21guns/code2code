@@ -65,7 +65,7 @@ class MdReader(Reader):
         if len(re.findall('[\u4e00-\u9fa5]',ss[name_index])) > 0 :#检查是否包含汉字
             return None
         f = table_metadata.new_field(ss[name_index], ss[chinese_name_index], ss[type_index])
-        return f.is_pk(ss[pk_index] == 'Y').nullable(ss[nullable_index] == 'Y')\
+        return f.pk(ss[pk_index] == 'Y').nullable(ss[nullable_index] == 'Y')\
                 .unique(ss[unique_index] == 'Y').default_value(ss[default_value_index])\
                 .note(ss[note_index])
         

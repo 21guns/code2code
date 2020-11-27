@@ -1,4 +1,4 @@
-from . import module, context
+from . import module, context, logging
 from . import language, reader
 
 
@@ -20,6 +20,7 @@ class EngineBuilder(object):
 
     def build(self):
         self._engine = Engine()
+
         self._engine.reader(self._reader_cfg(self._engine))\
             .pipeline(list(map(lambda p:p.build(self._engine), self._pipeline_cfg)))
 
@@ -71,13 +72,9 @@ class Pipeline(object):
 
     def run(self, modules):
         mapping_result = self._language_mapping.mapping(modules)
-
+        ##生成内容
         for module in self._modules:
             module.generator(mapping_result)
-
-        ##生成内容
-        # for key, module in  mapping_result.items():
-        #     module.generator(module)
 
         ##写入文件
         for m in self._modules:
@@ -94,6 +91,7 @@ class Engine(object):
     def __init__(self):
         self._reader = None
         self._pipeline = []
+        self._context = None
 
     def run(self, context):
         modules = self._reader.reader(context)

@@ -25,7 +25,7 @@ class Table(Metadata):
     def add_fields(self, field):
         if field is not None:
             self._fields.append(field)
-            if (field.is_pk()):
+            if (field.is_pk):
                 self._pk.append(field)
 
 def new_table(name, comment):
@@ -44,7 +44,7 @@ class Field(Metadata):
         return 'Field:%s %s' % (self.name, self._type)
     __repr__ = __str__
 
-    def is_pk(self, pk = True):
+    def pk(self, pk = False):
         self._is_pk = pk
         return self
 
@@ -70,6 +70,9 @@ class Field(Metadata):
     @property
     def comment(self):
         return self._note
+    @property
+    def is_pk(self):
+        return self._is_pk
 def new_field(name, chinese_name, type):
     return Field(name, chinese_name, type)
        
