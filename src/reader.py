@@ -211,7 +211,7 @@ class ExcelReader(Reader):
         unique_index, default_value_index, note_index = 7, 9, 10
         # print(ss)
         f = table_metadata.new_field(worksheet.cell_value(rown,name_index), worksheet.cell_value(rown,chinese_name_index), worksheet.cell_value(rown,type_index))
-        return f.is_pk(worksheet.cell_value(rown,pk_index) == 'Y').nullable(worksheet.cell_value(rown,nullable_index) == 'Y')\
+        return f.pk(worksheet.cell_value(rown,pk_index) == 'Y').nullable(worksheet.cell_value(rown,nullable_index) == 'Y')\
                 .unique(worksheet.cell_value(rown,unique_index) == 'Y').default_value(worksheet.cell_value(rown,default_value_index))\
                 .note(worksheet.cell_value(rown,note_index))
 
