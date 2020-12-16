@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.guns21.data.domain.result.MessageResult;
 import com.guns21.data.domain.result.PageData;
 
+import ${java_class.module_package}.api.dto.*;
 /**
  * 
  */

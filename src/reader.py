@@ -166,7 +166,7 @@ class MdReader(Reader):
                             current_action.response_type = line.split(':')[-1].lstrip().rstrip()
                     # 		pass
 
-                        if line.find('响应字段') != -1:#  - 响应字段
+                        if (line.find('响应字段') != -1) or (line.find('响应参数') != -1):#  - 响应字段
                             phase = Interface_Phase.ResponseParamter
                             group = action_metadata.Paramter.DEFAULT_GROUP
 

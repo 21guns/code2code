@@ -15,7 +15,9 @@ class JavaClassFile(object):
     @property
     def class_path(self):
         return self._project.java_src + CONTEXT.separator + self._java_class.package.replace('.', CONTEXT.separator)
-
+    @property
+    def java_class(self):
+        return self._java_class
     def generator(self):
         pass
 

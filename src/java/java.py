@@ -73,6 +73,7 @@ class JavaClassLanguageMapping(LanguageMapping):
                         enums_value_split = ':' if f.comment.find(':') != -1 else '：'
                         string_list = str(f.comment).split(enums_split)
                         if len(string_list) > 0:
+                            string_list = list(map(lambda x: x.lstrip().rstrip(), string_list))
                             cn = t.name + '_' + f.name 
                             enum = JavaClass(cn, f.comment)
                             mr.add_enum(enum)
@@ -123,7 +124,7 @@ class JavaClassLanguageMapping(LanguageMapping):
                             jc.add_fields(jf)
                         pass
         # print(mapping_result)
-        analytic(modules)
+        # analytic(mapping_result)
         return mapping_result
 
     def get_controller_mapping(self, action):
@@ -158,7 +159,9 @@ class JavaClassLanguageMapping(LanguageMapping):
             method_name = firstUpower(action.module_name)
         return action.http_method.lower() + method_name
 
-def analytic(modules):
+def analytic(mapping_result):
+    for key, mr in mapping_result.items():
+        print(mr.response)
     # for key, module in  modules.items():       
     #     jces = list(map(lambda x:x.java_class, module.tables))
     #     print(key, jces)
@@ -212,6 +215,12 @@ class JavaModule(Module):
         for p in self._projects:
             p.generator(module if len(module) > 0 else self._module)
 
+        #代码分析
+        # for p in self._projects:
+        #     for jc in p.classes:
+        #         for f in jc.java_class.fields:
+        #             if (not f.full_type.startswith('java')) :
+        #                 print(f.full_type)
         pass
     
     def write_file(self):
@@ -286,6 +295,9 @@ class JavaProject(Project):
     @property
     def module(self):
         return self._module
+    @property
+    def classes(self):
+        return self._class
 
     def add_class(self, java_class):
         self._class.append(java_class)
@@ -359,9 +371,9 @@ class ApiJavaProject(JavaProject):
         """
         for t in module.entity:
             #没有接口文档时
-            if not CONTEXT.has_interface_file :
-                self.add_class(VOJavaClassMako(self, t.copy()))
-                self.add_class(DTOJavaClassMako(self, t.copy()))
+            # if not CONTEXT.has_interface_file :
+            self.add_class(VOJavaClassMako(self, t.copy()))
+            self.add_class(DTOJavaClassMako(self, t.copy()))
             pass
         
         for e in module.enum:

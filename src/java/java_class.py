@@ -37,8 +37,10 @@ def parse_type(otherType):
         type = "Boolean"
     elif type.lower() == 'long':
         type = "Long"
+    elif type.lower() == 'array':
+        type = "List"
     else:
-        type = None
+        type = type
         # print('\033[1;32;43m parse java type(%s) error \033[0m' % type)
     return type
 
@@ -124,7 +126,7 @@ class JavaField(Java):
     def full_type(self):
         if self._type is None:
             return ''
-        if (self._type in ['String', 'Byte', 'Integer','Long']):
+        if (self._type in ['String', 'Byte', 'Integer','Long', 'Boolean']):
             return '.'.join(['java.lang', self._type])
         elif (self._type in ['LocalDateTime', 'LocalDate']):
             return '.'.join(['java.time', self._type])
@@ -132,6 +134,10 @@ class JavaField(Java):
             return 'java.util.HashMap'
         elif (self._type == 'BigDecimal'):
             return 'java.math.BigDecimal'
+        elif self._type.startswith('List'):
+            return 'java.util.List'
+        elif self._type == 'Object':
+            return ''
         else:
             return self._type
     @property
@@ -168,7 +174,8 @@ class JavaClass(Java):
         return self._class_name_prefix + self.original_class_name + self._class_name_suffix
     @property
     def original_class_name(self):
-        return convert(self._class_name,'_', True)
+        # 如果名称里包含_ 进行驼峰转换，反之不包含返回首字符大写
+        return convert(self._class_name,'_', True) if self._class_name.find('_') != -1 else firstUpowerOnly(self._class_name)
     @property
     def metadata_name(self):
         return self._class_name
@@ -213,7 +220,8 @@ class JavaClass(Java):
             self._fields.append(field)
             if field.is_id:
                 self._id_field = field
-            if (not field.full_type.startswith('java.lang')) :
+            if (not field.full_type.startswith('java.lang')
+                and len(field.full_type) > 0) :
                 self._imports.append('import ' +field.full_type + ';')
         return self
 
