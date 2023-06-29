@@ -22,6 +22,7 @@ class SqlLanguageMapping(LanguageMapping):
         tables = []
         for key, module in  modules.items():
             tables = tables + module.tables
+
         return tables
 
 class SqlModule(Module):
@@ -47,8 +48,8 @@ class SqlModule(Module):
         if not os.path.exists(self.path):
             os.makedirs(self.path)
         pomPath = self.path + CONTEXT.separator + 'database-init.sql'
-        if os.path.exists(pomPath):
-            return   
+        # if os.path.exists(pomPath):
+        #     return   
         with open(pomPath, 'w') as f:
             f.write(self._buf.getvalue())
             f.close()

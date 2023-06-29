@@ -89,10 +89,11 @@ class JavaMethod(Java):
         return self
     
 class JavaField(Java):
-    def __init__(self, field_name, db_type, comment):
+    def __init__(self, field_name, db_type, comment, note=''):
         super(JavaField, self).__init__()
         self._field_name = field_name
         self._db_type = db_type
+        self._note = note
         self._type = parse_type(db_type) 
         if (self._type is None) :
             print('\033[1;32;43m parse java type(%s) error for field(%s) \033[0m' % (self._type, self._field_name))
@@ -118,7 +119,7 @@ class JavaField(Java):
         return self._comment
     @property
     def note(self):
-        return ''
+        return self._note
     @property
     def is_id(self):
         return self.name == 'id'

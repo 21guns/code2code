@@ -1,11 +1,12 @@
 % for table in tables:
 <%
     statms = []
-    columns = ',\n\t'.join(map(lambda x : "`" + x.name + "` " + x.type + " NOT NULL COMMENT "+ "'" + x.comment+"'", table.fields))
+    columns = ',\n\t'.join(map(lambda x : "`" + x.name + "` " + x.type + " " + x.nullable_str + " COMMENT "+ "'" + x.comment+"'", table.fields))
     statms.append(columns)
-    for p in table.pk:
-        statms.append("PRIMARY KEY (`" + p.name + "`)")
+    if table.has_pk:
+        statms.append("PRIMARY KEY (`" + table.pk.name + "`)")
 %>
+
 -- -----------------------------------------------
 -- Table `${table.name}` ${table.comment}
 -- -----------------------------------------------

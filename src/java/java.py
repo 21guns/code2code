@@ -63,7 +63,7 @@ class JavaClassLanguageMapping(LanguageMapping):
                 jc = JavaClass(t.name, t.comment)
                 for f in t.fields:
                     otherType = f.type.split('(')[0]
-                    jf = JavaField(f.name, otherType, f.get_note())
+                    jf = JavaField(f.name, otherType,f.get_chinese_name(), f.get_note())
                     jf.metadata = f
                     jc.add_fields(jf)
 

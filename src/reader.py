@@ -209,10 +209,13 @@ class ExcelReader(Reader):
         chinese_name_index, name_index = 2, 3
         type_index, pk_index, nullable_index = 4, 5, 6
         unique_index, default_value_index, note_index = 7, 9, 10
-        # print(ss)
+        # print(worksheet.cell_value(rown,2))
         f = table_metadata.new_field(worksheet.cell_value(rown,name_index), worksheet.cell_value(rown,chinese_name_index), worksheet.cell_value(rown,type_index))
-        return f.pk(worksheet.cell_value(rown,pk_index) == 'Y').nullable(worksheet.cell_value(rown,nullable_index) == 'Y')\
-                .unique(worksheet.cell_value(rown,unique_index) == 'Y').default_value(worksheet.cell_value(rown,default_value_index))\
+
+        return f.pk(worksheet.cell_value(rown,pk_index) in ['Y',"是"])\
+                .nullable(worksheet.cell_value(rown,nullable_index) in ['Y',"是",""])\
+                .unique(worksheet.cell_value(rown,unique_index) in ['Y',"是"])\
+                .default_value(worksheet.cell_value(rown,default_value_index))\
                 .note(worksheet.cell_value(rown,note_index))
 
     def reader(self, context = context.Context()):
@@ -256,5 +259,6 @@ class ExcelReader(Reader):
                     f = self.read_db_field(worksheet,rown)
                     if current_table != None:
                         current_table.add_fields(f)
+        # print(modules)
         return modules
         pass

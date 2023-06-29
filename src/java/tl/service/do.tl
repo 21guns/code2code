@@ -74,17 +74,17 @@ public class ${class_name} implements Serializable {
 		% if a.name not in ["id","gmt_created","gmt_modified"]:
 
 	/**
-		* ${a.comment}
-		* ${a.note}
-		*/
+	 * ${a.comment}
+	 * ${a.note}
+	 */
 	private ${enumType} ${a.name};
 		% endif
 	% else :
 
 	/**
-		* ${a.comment}
-		* ${a.note}
-		*/
+	 * ${a.comment}
+	 * ${a.note}
+	 */
 	private ${enumType} ${a.name};
 	%endif
 % endfor

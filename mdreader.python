@@ -9,11 +9,11 @@ from src.sql import sql
 from enum import Enum
 
 #相关环境变量设置
-CONTEXT.workspace = '/Users/jliu/Develop/workspace/ktjr/tt/'
-# CONTEXT.workspace = '/Users/jliu/Develop/workspace/sft/'
-CONTEXT.package = 'com.sifangting'
-# CONTEXT.table_file = './db.xlsx'
-CONTEXT.table_file = './template/设计规范/数据结构规范.md'
+# CONTEXT.workspace = '/Users/jliu/Develop/workspace/ktjr/tt/'
+CONTEXT.workspace = '/Users/jliu/Develop/workspace/tmp/'
+CONTEXT.package = 'com.ktjr.call'
+CONTEXT.table_file = './db.xlsx'
+# CONTEXT.table_file = './template/设计规范/数据结构规范.md'
 # CONTEXT.interface_file = './template/设计规范/接口文档规范.md'
 
 engineBuilder = EngineBuilder()

@@ -4,7 +4,7 @@ class Table(Metadata):
     def __init__(self, name, comment):
         super(Table, self).__init__(name)
         self._fields = []
-        self._pk = []
+        self._pk = None
         self._comment = comment
     def __str__(self):
         return 'Table: name = %s fields = %s' % (self.name, self.fields)
@@ -13,20 +13,22 @@ class Table(Metadata):
     @property
     def fields(self):
         return self._fields
-
     @property
     def pk(self):
         return self._pk
-
     @property
     def comment(self):
         return self._comment
+    @property
+    def has_pk(self):
+        return self._pk is not None
 
     def add_fields(self, field):
         if field is not None:
             self._fields.append(field)
             if (field.is_pk):
-                self._pk.append(field)
+                # print(f"{field} : {field.is_pk}")
+                self._pk = field
 
 def new_table(name, comment):
 	return Table(name, comment)
@@ -59,7 +61,9 @@ class Field(Metadata):
         return self
     def get_note(self):
         return self._note
-
+    def get_chinese_name(self):
+        return self._chinese_name
+    
     def note(self, note):
         self._note = note
         return self
@@ -69,10 +73,13 @@ class Field(Metadata):
         return self._type
     @property
     def comment(self):
-        return self._note
+        return self._chinese_name
     @property
     def is_pk(self):
         return self._is_pk
+    @property
+    def nullable_str(self):
+        return "DEFAULT NULL" if self._nullable else "NOT NULL"
 def new_field(name, chinese_name, type):
     return Field(name, chinese_name, type)
        
