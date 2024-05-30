@@ -6,6 +6,7 @@ package ${java_class.package};
 %>
 import java.util.Optional;
 import java.util.Objects;
+import java.util.List;
 import com.guns21.common.util.ObjectUtils;
 
 import org.springframework.stereotype.Repository;
@@ -22,13 +23,28 @@ public class ${class_name}RepositoryImpl implements ${class_name}Repository {
 	private ${class_name}Mapper mapper;
 
 	@Override
-    public Integer save(${class_name}DO data) {
+    public Integer insert(${class_name}DO data) {
         return Optional.ofNullable(data).map(entity -> {
             % if has_id:
             entity.preCreate();
             % endif
             return mapper.insert(entity);
         }).orElse(0);
+    }
+
+    @Override
+    public Integer insertSelective(${class_name}DO data) {
+        return Optional.ofNullable(data).map(entity -> {
+            % if has_id:
+            entity.preCreate();
+            % endif
+            return mapper.insertSelective(entity);
+        }).orElse(0);
+    }
+
+    @Override
+    public Integer insertBatch(List<${class_name}DO> data) {
+        return mapper.insertBatch(data);
     }
 
 	@Override
@@ -38,6 +54,16 @@ public class ${class_name}RepositoryImpl implements ${class_name}Repository {
             entity.preUpdate();
             % endif
             return mapper.updateByPrimaryKey(entity);
+        }).orElse(0);
+    }
+
+    @Override
+    public Integer updateByPrimaryKeySelective(${class_name}DO data) {
+        return Optional.ofNullable(data).map(entity -> {
+            % if has_id:
+            entity.preUpdate();
+            % endif
+            return mapper.updateByPrimaryKeySelective(entity);
         }).orElse(0);
     }
 

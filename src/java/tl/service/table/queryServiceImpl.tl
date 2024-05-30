@@ -3,6 +3,7 @@ package ${java_class.package};
     class_name =java_class.original_class_name
     id_field = java_class.id_field
 %>
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Objects;
@@ -44,6 +45,14 @@ public class ${java_class.class_name} implements ${class_name}QueryService {
             return mapper.selectByPrimaryKey(id);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<${class_name}VO> getByIds(List<${id_field.type}> ids) {
+        if (ObjectUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        return mapper.selectByIds(ids);
     }
     % endif
 

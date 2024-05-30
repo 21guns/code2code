@@ -81,6 +81,16 @@
         WHERE id = #{id,jdbcType=${java_class.id_field.jdbc_type}}
     </select>
 
+	<select id="selectByIds" resultMap="${class_name}ResultMap">
+		SELECT
+		<include refid="columns" />
+		FROM ${table_name}
+		WHERE id IN
+		<foreach collection="ids" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</select>
+
     <delete id="deleteByPrimaryKey" parameterType="${java_class.id_field.full_type}">
         DELETE FROM ${table_name} WHERE id = #{id,jdbcType=${java_class.id_field.jdbc_type}}
     </delete>
@@ -131,4 +141,12 @@
         </set>
         WHERE id = #{id}
     </update>
+
+	<insert id="insertBatch" parameterType="java.util.List">
+		INSERT INTO ${table_name} (<include refid="columns" />)
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(${',\n\t\t'.join(values)})
+		</foreach>
+	</insert>
 </mapper>

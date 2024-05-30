@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.3.RELEASE</version>
+		<version>3.1.12</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -30,7 +30,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>Hoxton.SR8</version>
+				<version>2022.0.5</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -38,7 +38,7 @@
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>21.0</version>
+                <version>32.1.2-jre</version>
 			</dependency>
 			<!-- commons -->
 			<dependency>
@@ -108,67 +108,67 @@
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>authorization</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>support</artifactId>
-				<version>2.0.1</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>common</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>spring-data</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>servlet</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>login-user</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>login-user-webmvc</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>spring-mvc</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>mybatis</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>spring-session</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>jackson-mixin</artifactId>
-				<version>2.0.1</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>redis</artifactId>
-				<version>2.0.0</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.guns21</groupId>
 				<artifactId>open-feign</artifactId>
-				<version>2.0.1</version>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.github.binarywang</groupId>

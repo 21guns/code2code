@@ -26,8 +26,11 @@ public interface ${java_class.class_name} {
     Integer deleteByPrimaryKey(${id_field.type} ${id_field.name});
 
     Optional<${class_name}VO> selectByPrimaryKey(${id_field.type} ${id_field.name});
+
+    List<${class_name}VO> selectByIds(@Param("ids") List<${id_field.type}> ids);
 % endif
 
     List<${class_name}VO> pageList(@Param("query") ${class_name}DTO dto, @Param("pageNum") int pageNum, @Param("pageSize") int pageSize);
 
+    Integer insertBatch(@Param("list") List<${class_name}DO> list);
 }

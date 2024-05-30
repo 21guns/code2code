@@ -17,5 +17,7 @@ public interface ${java_class.class_name} {
 
     % if id_field is not None :
     Optional<${class_name}VO> getById(${id_field.type} id);
+
+    List<${class_name}VO> getByIds(List<${id_field.type}> ids);
     % endif
 }

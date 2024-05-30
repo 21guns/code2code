@@ -36,7 +36,7 @@ public class ${java_class.class_name} {
 	private ${class_name}CommandService commandService;
 
 	@GetMapping("/{id}")
-    public MessageResult<${class_name}DTO> get(@PathVariable String id) {
+    public MessageResult<${class_name}DTO> get(@PathVariable Long id) {
 
 		return MessageResult.success(queryService.getById(id).orElse(null));
 	} 

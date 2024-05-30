@@ -10,7 +10,9 @@ import ${java_class.module_package}.api.dto.${class_name}DTO;
 
 public interface ${java_class.class_name} {
 
-	MessageResult save(${class_name}DTO dto);
+	MessageResult insert(${class_name}DTO dto);
+
+    MessageResult insertBatch(List<${class_name}DO> dtos);
 
     MessageResult updateByPrimaryKey(${class_name}DTO dto);
 

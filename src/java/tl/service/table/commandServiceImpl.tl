@@ -16,6 +16,7 @@ import ${java_class.module_package}.service.command.${class_name}CommandService;
 import ${java_class.module_package}.service.repository.${class_name}Repository;
 
 import java.util.Optional;
+import java.util.List
 
 @Service
 @Slf4j
@@ -25,16 +26,25 @@ public class ${java_class.class_name} implements ${class_name}CommandService {
 	private ${class_name}Repository repository;
 
 	@Override
-	public 	MessageResult save(${class_name}DTO dto) {
+	public MessageResult insert(${class_name}DTO dto) {
 	    return Optional.ofNullable(dto)
 	    .map(entity -> {
-			repository.save(${class_name}DO.from(entity));
+			repository.insert(${class_name}DO.from(entity));
 			return MessageResult.success();
 		}).orElse(MessageResult.fail());
 	}
 
 	@Override
-	public 	MessageResult updateByPrimaryKey(${class_name}DTO dto) {
+	public MessageResult insertBatch(List<${class_name}DO> dtos) {
+		return Optional.ofNullable(dtos)
+	    .map(entities -> {
+			repository.insertBatch(dtos);
+			return MessageResult.success();
+		}).orElse(MessageResult.fail());
+	}
+
+	@Override
+	public MessageResult updateByPrimaryKey(${class_name}DTO dto) {
 		return Optional.ofNullable(dto)
 	    .map(entity -> {
 			repository.updateByPrimaryKey(${class_name}DO.from(entity));
