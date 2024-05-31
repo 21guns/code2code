@@ -10,10 +10,11 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<artifactId>${module_name}</artifactId>
+	<groupId>${package_name}.${module_name}</groupId>
+	<artifactId>admin-controller</artifactId>
 	<version>${v}</version>
 	<packaging>jar</packaging>
-	<name>${module_name}</name>
+	<name>${module_name}-admin-controller</name>
 
 	<properties>
 	</properties>
@@ -42,30 +43,13 @@
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-tracing-bridge-brave</artifactId>
-		</dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper-spring-boot-starter</artifactId>
+        </dependency>
 		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-stream-binder-rabbit</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-webflux</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		% for m in dep_project:
-		<dependency>
-			<groupId>${package_name}.${m}</groupId>
-			<artifactId>admin-controller</artifactId>
-			<version>${v}</version>
-		</dependency>
-		% endfor
 		<dependency>
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
@@ -75,14 +59,17 @@
 			<groupId>com.guns21</groupId>
 			<artifactId>spring-data</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>${package_name}.${module_name}</groupId>
+			<artifactId>service</artifactId>
+			<version>${v}</version>
+		</dependency>
+		<dependency>
+			<groupId>${package_name}.${module_name}</groupId>
+			<artifactId>api</artifactId>
+			<version>${v}</version>
+		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+
 </project>

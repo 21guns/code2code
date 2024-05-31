@@ -49,7 +49,7 @@ public class ${java_class.class_name} {
 
 	@PostMapping
     public MessageResult save(@RequestBody ${class_name}DTO dto) {
-    	return commandService.save(dto);
+    	return commandService.insert(dto);
 	} 
 
 	@PostMapping("/{id}")

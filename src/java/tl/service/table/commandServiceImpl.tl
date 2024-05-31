@@ -16,7 +16,7 @@ import ${java_class.module_package}.service.command.${class_name}CommandService;
 import ${java_class.module_package}.service.repository.${class_name}Repository;
 
 import java.util.Optional;
-import java.util.List
+import java.util.List;
 
 @Service
 @Slf4j
@@ -35,12 +35,18 @@ public class ${java_class.class_name} implements ${class_name}CommandService {
 	}
 
 	@Override
-	public MessageResult insertBatch(List<${class_name}DO> dtos) {
-		return Optional.ofNullable(dtos)
-	    .map(entities -> {
-			repository.insertBatch(dtos);
+	public MessageResult insertSelective(${class_name}DTO dto) {
+		return Optional.ofNullable(dto)
+	    .map(entity -> {
+			repository.insertSelective(${class_name}DO.from(entity));
 			return MessageResult.success();
 		}).orElse(MessageResult.fail());
+	}
+
+	@Override
+	public MessageResult insertBatch(List<${class_name}DO> dtos) {
+		repository.insertBatch(dtos);
+		return MessageResult.success();
 	}
 
 	@Override
@@ -51,6 +57,16 @@ public class ${java_class.class_name} implements ${class_name}CommandService {
 			return MessageResult.success();
 		}).orElse(MessageResult.fail());
 	}
+
+	@Override
+	public MessageResult updateByPrimaryKeySelective(${class_name}DTO dto) {
+		return Optional.ofNullable(dto)
+	    .map(entity -> {
+			repository.updateByPrimaryKeySelective(${class_name}DO.from(entity));
+			return MessageResult.success();
+		}).orElse(MessageResult.fail());
+	}
+
     % if has_id:
 	@Override
 	public MessageResult deleteByPrimaryKey(${id_field.type} ${id_field.name}) {

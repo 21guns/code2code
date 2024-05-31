@@ -14,14 +14,29 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.12</version>
+		<version>3.1.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
 	<properties>
-		<org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
+		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<docker-maven-plugin.version>1.3.0</docker-maven-plugin.version>
+		<com.guns21.authorization.version>0.0.3-SNAPSHOT</com.guns21.authorization.version>
+		<com.guns21.support.version>0.0.3-SNAPSHOT</com.guns21.support.version>
+		<com.guns21.common.version>0.0.3-SNAPSHOT</com.guns21.common.version>
+		<com.guns21.spring-data.version>0.0.3-SNAPSHOT</com.guns21.spring-data.version>
+		<com.guns21.servlet.version>0.0.3-SNAPSHOT</com.guns21.servlet.version>
+		<com.guns21.login-user.version>0.0.3-SNAPSHOT</com.guns21.login-user.version>
+		<com.guns21.login-user-webmvc.version>0.0.3-SNAPSHOT</com.guns21.login-user-webmvc.version>
+		<com.guns21.spring-mvc.version>0.0.3-SNAPSHOT</com.guns21.spring-mvc.version>
+		<com.guns21.mybatis.version>0.0.3-SNAPSHOT</com.guns21.mybatis.version>
+		<com.guns21.spring-session.version>0.0.3-SNAPSHOT</com.guns21.spring-session.version>
+		<com.guns21.jackson-mixin.version>0.0.3-SNAPSHOT</com.guns21.jackson-mixin.version>
+		<com.guns21.redis.version>0.0.3-SNAPSHOT</com.guns21.redis.version>
+		<com.guns21.open-feign.version>0.0.3-SNAPSHOT</com.guns21.open-feign.version>
+		<com.guns21.event.version>0.0.3-SNAPSHOT</com.guns21.event.version>
+		<com.guns21.spring.version>0.0.3-SNAPSHOT</com.guns21.spring.version>
 		<release.version>0.0.1-SNAPSHOT</release.version> <!-- 仅仅为了在idea中关联依赖时使用-->
 	</properties>
 
@@ -30,7 +45,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>2022.0.5</version>
+				<version>2022.0.4</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -65,18 +80,18 @@
 			<dependency>
 				<groupId>org.mybatis</groupId>
 				<artifactId>mybatis</artifactId>
-				<version>3.5.3</version>
+				<version>3.5.13</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mybatis.spring.boot</groupId>
 				<artifactId>mybatis-spring-boot-starter</artifactId>
-				<version>2.1.1</version>
+				<version>3.0.2</version>
 			</dependency>
 			<!--pagehelper-->
 			<dependency>
 				<groupId>com.github.pagehelper</groupId>
 				<artifactId>pagehelper-spring-boot-starter</artifactId>
-				<version>1.2.12</version>
+				<version>1.4.7</version>
 			</dependency>
 <!--			<dependency>-->
 <!--				<groupId>tk.mybatis</groupId>-->
@@ -87,7 +102,7 @@
 			<dependency>
 				<groupId>io.github.openfeign</groupId>
 				<artifactId>feign-core</artifactId>
-				<version>9.7.0</version>
+				<version>10.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.openfeign</groupId>
@@ -105,71 +120,82 @@
 				<version>4.1.0</version>
 			</dependency>
 			<!-- guns21 -->
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>authorization</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>support</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>common</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>spring-data</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>servlet</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>login-user</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>login-user-webmvc</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>spring-mvc</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>mybatis</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>spring-session</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>jackson-mixin</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>redis</artifactId>
-				<version>3.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.guns21</groupId>
-				<artifactId>open-feign</artifactId>
-				<version>3.0.0</version>
-			</dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>authorization</artifactId>
+                <version>${'${com.guns21.authorization.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>support</artifactId>
+				<version>${'${com.guns21.support.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>common</artifactId>
+				<version>${'${com.guns21.common.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>spring-data</artifactId>
+				<version>${'${com.guns21.spring-data.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>servlet</artifactId>
+				<version>${'${com.guns21.servlet.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>login-user</artifactId>
+				<version>${'${com.guns21.login-user.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>login-user-webmvc</artifactId>
+				<version>${'${com.guns21.login-user-webmvc.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>spring-mvc</artifactId>
+				<version>${'${com.guns21.spring-mvc.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>mybatis</artifactId>
+				<version>${'${com.guns21.mybatis.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>spring-session</artifactId>
+				<version>${'${com.guns21.spring-session.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>jackson-mixin</artifactId>
+				<version>${'${com.guns21.jackson-mixin.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>redis</artifactId>
+				<version>${'${com.guns21.redis.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>open-feign</artifactId>
+				<version>${'${com.guns21.open-feign.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>event</artifactId>
+				<version>${'${com.guns21.event.version}'}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.guns21</groupId>
+                <artifactId>spring</artifactId>
+				<version>${'${com.guns21.spring.version}'}</version>
+            </dependency>
+
 			<dependency>
 				<groupId>com.github.binarywang</groupId>
 				<artifactId>weixin-java-mp</artifactId>
@@ -222,14 +248,29 @@
 
 	<profiles>
 		<profile>
-			<id>jdk-11</id>
+			<id>jdk-21</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
-				<maven.compiler.source>11</maven.compiler.source>
-				<maven.compiler.target>11</maven.compiler.target>
-				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
+				<maven.compiler.source>21</maven.compiler.source>
+				<maven.compiler.target>21</maven.compiler.target>
+				<maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>
+				<com.guns21.authorization.version>0.0.3-SNAPSHOT</com.guns21.authorization.version>
+                <com.guns21.support.version>0.0.3-SNAPSHOT</com.guns21.support.version>
+                <com.guns21.common.version>0.0.3-SNAPSHOT</com.guns21.common.version>
+                <com.guns21.spring-data.version>0.0.3-SNAPSHOT</com.guns21.spring-data.version>
+                <com.guns21.servlet.version>0.0.3-SNAPSHOT</com.guns21.servlet.version>
+                <com.guns21.login-user.version>0.0.3-SNAPSHOT</com.guns21.login-user.version>
+                <com.guns21.login-user-webmvc.version>0.0.3-SNAPSHOT</com.guns21.login-user-webmvc.version>
+                <com.guns21.spring-mvc.version>0.0.3-SNAPSHOT</com.guns21.spring-mvc.version>
+                <com.guns21.mybatis.version>0.0.3-SNAPSHOT</com.guns21.mybatis.version>
+                <com.guns21.spring-session.version>0.0.3-SNAPSHOT</com.guns21.spring-session.version>
+                <com.guns21.jackson-mixin.version>0.0.3-SNAPSHOT</com.guns21.jackson-mixin.version>
+                <com.guns21.redis.version>0.0.3-SNAPSHOT</com.guns21.redis.version>
+                <com.guns21.open-feign.version>0.0.3-SNAPSHOT</com.guns21.open-feign.version>
+                <com.guns21.event.version>0.0.3-SNAPSHOT</com.guns21.event.version>
+                <com.guns21.spring.version>0.0.3-SNAPSHOT</com.guns21.spring.version>
 				<release.version>0.0.1-SNAPSHOT</release.version>
 			</properties>
 		</profile>
@@ -242,9 +283,9 @@
 				</property>
 			</activation>
 			<properties>
-				<maven.compiler.source>11</maven.compiler.source>
-				<maven.compiler.target>11</maven.compiler.target>
-				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
+				<maven.compiler.source>21</maven.compiler.source>
+				<maven.compiler.target>21</maven.compiler.target>
+				<maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>
 				<release.version>v1.0.0</release.version>
 			</properties>
 		</profile>
@@ -257,9 +298,24 @@
 				</property>
 			</activation>
 			<properties>
-				<maven.compiler.source>11</maven.compiler.source>
-				<maven.compiler.target>11</maven.compiler.target>
-				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
+				<maven.compiler.source>21</maven.compiler.source>
+				<maven.compiler.target>21</maven.compiler.target>
+				<maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>
+				<com.guns21.authorization.version>3.0.0</com.guns21.authorization.version>
+                <com.guns21.support.version>3.0.0</com.guns21.support.version>
+                <com.guns21.common.version>3.0.0</com.guns21.common.version>
+                <com.guns21.spring-data.version>3.0.0</com.guns21.spring-data.version>
+                <com.guns21.servlet.version>3.0.0</com.guns21.servlet.version>
+                <com.guns21.login-user.version>3.0.0</com.guns21.login-user.version>
+                <com.guns21.login-user-webmvc.version>3.0.0</com.guns21.login-user-webmvc.version>
+                <com.guns21.spring-mvc.version>3.0.0</com.guns21.spring-mvc.version>
+                <com.guns21.mybatis.version>3.0.0</com.guns21.mybatis.version>
+                <com.guns21.spring-session.version>3.0.0</com.guns21.spring-session.version>
+                <com.guns21.jackson-mixin.version>3.0.0</com.guns21.jackson-mixin.version>
+                <com.guns21.redis.version>3.0.0</com.guns21.redis.version>
+                <com.guns21.open-feign.version>3.0.0</com.guns21.open-feign.version>
+                <com.guns21.event.version>3.0.0</com.guns21.event.version>
+                <com.guns21.spring.version>3.0.0</com.guns21.spring.version>
 				<release.version>v1.0.0</release.version>
 			</properties>
 		</profile>
@@ -274,9 +330,9 @@
 				</property>
 			</activation>
 			<properties>
-				<maven.compiler.source>11</maven.compiler.source>
-				<maven.compiler.target>11</maven.compiler.target>
-				<maven.compiler.compilerVersion>11</maven.compiler.compilerVersion>
+				<maven.compiler.source>21</maven.compiler.source>
+				<maven.compiler.target>21</maven.compiler.target>
+				<maven.compiler.compilerVersion>21</maven.compiler.compilerVersion>
 				<release.version>0.0.1-b-SNAPSHOT</release.version>
 			</properties>
 		</profile>
@@ -302,12 +358,11 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<release>11</release>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.12</version>
+							<version>1.18.30</version>
 						</path>
 						<path>
 							<groupId>org.mapstruct</groupId>

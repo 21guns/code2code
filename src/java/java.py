@@ -12,6 +12,7 @@ from io import StringIO
 import os
 from itertools import groupby
 import difflib
+import shutil
 
 path = os.path.dirname(os.path.abspath(__file__))# get this file path
 
@@ -69,22 +70,23 @@ class JavaClassLanguageMapping(LanguageMapping):
 
                     #enums
                     if f.name in ['type','status']:
-                        enums_split = ',' if f.comment.find(',') != -1 else '、'
-                        enums_value_split = ':' if f.comment.find(':') != -1 else '：'
-                        string_list = str(f.comment).split(enums_split)
+                        note = f.get_note()
+                        enums_split = ',' if note.find(',') != -1 else '、'
+                        enums_value_split = ':' if note.find(':') != -1 else '：'
+                        string_list = str(note).split(enums_split)
                         if len(string_list) > 0:
                             string_list = list(map(lambda x: x.lstrip().rstrip(), string_list))
                             cn = t.name + '_' + f.name 
                             enum = JavaClass(cn, f.comment)
                             mr.add_enum(enum)
                             for n in string_list:
-                                string_list = str(n).split(enums_value_split)
-                                if len(string_list) == 2: 
-                                    ejf = JavaField(string_list[0], 'String', string_list[1])
+                                ev = str(n).split(enums_value_split)
+                                if len(ev) == 2: 
+                                    ejf = JavaField(ev[0], 'String', ev[1])
                                     ejf.metadata = f
                                     enum.add_fields(ejf)
                                 else:
-                                    print('enums error table(%s) field(%s), %s' % (jc.metadata_name,f.name, string_list))
+                                    print('enums error table(%s) field(%s), %s' % (jc.metadata_name,f.name, ev))
                                 
                 mr.add_entity(jc)
 
@@ -180,8 +182,11 @@ class JavaWorkspaceModule(Module):
     
     def _init_modules(self, mapping_result):
         self._modules.append(ParentModule())
+        md_names = []
         for key, mr in mapping_result.items():
             self._modules.append(JavaModule(key, mr))
+            md_names.append(key)
+        self._modules.append(AdminStarterModule(md_names))
 
     def generator(self, mapping_result):
         self._init_modules(mapping_result)
@@ -258,11 +263,70 @@ class ParentModule(Module):
         ctx = Context(buf, package_name = CONTEXT.package)
         template.render_context(ctx)
         pomPath = self.path + CONTEXT.separator + 'pom.xml'
-        if os.path.exists(pomPath):
-            return   
+        # if os.path.exists(pomPath):
+        #     return   
         with open(pomPath, 'w') as f:
             f.write(buf.getvalue())
             f.close()
+
+class AdminStarterModule(Module):
+    java_src_root = '/src/main/java'
+    resource_src_root = '/src/main/resources/'
+
+    def __init__(self, dep_project = []):
+        super(AdminStarterModule, self).__init__('admin')
+        self._dep_project = dep_project
+
+
+    @property       
+    def path(self):
+        return '/'.join([CONTEXT.workspace, self.name])
+    @property
+    def package(self):
+        return '.'.join([CONTEXT.package, self.name])
+    @property
+    def java_src(self):
+        return self.path + CONTEXT.separator + AdminStarterModule.java_src_root
+    @property
+    def resource_src(self):
+        return self.path + CONTEXT.separator + AdminStarterModule.resource_src_root
+    @property
+    def package_path(self):
+        return self.java_src + CONTEXT.separator + self.package.replace('.', CONTEXT.separator).replace('-', CONTEXT.separator)
+    
+    def write_file(self):
+         ## 1.mk dir
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+        if not os.path.exists(self.java_src):
+            os.makedirs(self.java_src)
+        if not os.path.exists(self.resource_src):
+            os.makedirs(self.resource_src)
+        if not os.path.exists(self.package_path):
+            os.makedirs(self.package_path)
+        ## 2.application class
+        template = Template(filename = path + '/tl/admin/adminApplication.tl', input_encoding='utf-8')
+        app_path = self.package_path + CONTEXT.separator + 'AdminApplication.java'
+        buf = StringIO()
+        ctx = Context(buf, package_name = CONTEXT.package, module_name = self.name)
+        template.render_context(ctx)
+        with open(app_path, 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
+        # 3.create pom
+        template = Template(filename = path + '/tl/pom/admin.tl', input_encoding='utf-8')
+        buf = StringIO()
+        ctx = Context(buf, package_name = CONTEXT.package, module_name=self.name, dep_project = self._dep_project)
+        template.render_context(ctx)
+        pomPath = self.path + CONTEXT.separator + 'pom.xml'
+        # if os.path.exists(pomPath):
+        #         return   
+        with open(pomPath, 'w') as f:
+            f.write(buf.getvalue())
+            f.close()
+        # 4.resourcen file
+        shutil.copyfile(path + '/tl/admin/application.yml', self.resource_src + CONTEXT.separator + 'application.yml')
+        shutil.copyfile(path + '/tl/admin/logback.xml', self.resource_src + CONTEXT.separator + 'logback.xml')
 
 class JavaProject(Project):
     java_src_root = '/src/main/java'
@@ -319,7 +383,7 @@ class JavaProject(Project):
         if not os.path.exists(self.package_path):
             os.makedirs(self.package_path)
             
-        self._write_prject();
+        self._write_prject()
 
         for c in self._class:
             c.write_file()
@@ -412,7 +476,7 @@ class AdminControllerJavaProject(JavaProject):
 
     def _write_prject(self):
         ## 1.create pom
-        template = Template(filename = path + '/tl/pom/admin.tl', input_encoding='utf-8')
+        template = Template(filename = path + '/tl/pom/adminController.tl', input_encoding='utf-8')
         buf = StringIO()
         ctx = Context(buf, package_name = CONTEXT.package, module_name=self._module.name)
         template.render_context(ctx)        

@@ -1,0 +1,170 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 1440
+spring:
+  application:
+    name: admin
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://172.17.20.160:3306/call_center?useUnicode=true&characterEncoding=utf8&autoReconnect=true&useSSL=false&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    username: kaitong
+    password: omMSGyvOE9vsnZiq
+    driverClassName: com.mysql.cj.jdbc.Driver
+    hikari:
+      poolName: admin-pool
+      maximumPoolSize: 50
+      minimumIdle: 20
+      maxLifetime: 2000000
+      connectionTimeout: 30000
+      idleTimeout: 30000
+      dataSourceProperties:
+        # opt for mysql
+        cachePrepStmts: true
+        useServerPrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+  session:
+    store-type: redis
+    redis:
+      repository-type: indexed
+  data:
+    redis:
+      host: 172.17.20.160
+      database: 11
+      port: 6379
+  rabbitmq:
+    host: 172.17.20.160
+    port: 5672
+    username: ceres_dev
+    password: Y9uAWiZt7pWO2sdq
+    virtual-host: /cc-devb
+  cloud:
+    function:
+      definition: callInputEvent;callQueueInputEvent;accountInputEvent;forceHangupInputEvent
+      routing-expression: "'handle' + headers['eventType']"
+    stream:
+      rabbit:
+        bindings:
+          callQueueInputEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              republish-to-dlq: true
+              declare-exchange: false
+              queue-name-group-only: true
+              acknowledge-mode: MANUAL
+          accountInputEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              republish-to-dlq: true
+              declare-exchange: false
+              queue-name-group-only: true
+          callInputEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              republish-to-dlq: true
+              declare-exchange: false
+              queue-name-group-only: true
+          forceHangupInputEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              republish-to-dlq: true
+              declare-exchange: false
+          weicaiNotificationInputEvent-in-0:
+            consumer:
+              auto-bind-dlq: true
+              republish-to-dlq: true
+              declare-exchange: false
+      bindings:
+        callQueueInputEvent-in-0:
+          destination: call-queue-output-event
+          group: call-queue-input-event
+        call-queue-output-event:
+          destination: call-queue-output-event
+        callInputEvent-in-0:
+          destination: call-output-event
+          group: call-input-event
+        call-output-event:
+          destination: call-output-event
+        accountInputEvent-in-0:
+          destination: account-output-event
+          group: account-input-event
+        account-output-event:
+          destination: account-output-event
+        forceHangupInputEvent-in-0:
+          destination: force-hangup-output-event
+          group: force-hangup-input-event-${POD_NAME:cc-admin}
+        force-hangup-output-event:
+          destination: force-hangup-output-event
+        weicaiNotificationInputEvent-in-0:
+          destination: call-queue-output-event
+          group: call-queue-input-event
+        weicai-notification-output-event:
+          destination: call-queue-output-event
+
+management:
+  health:
+    defaults:
+      enabled: false
+    ping:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+mybatis:
+  type-handlers-package: com.guns21.mybatis.handler
+  mapper-locations: classpath:com/ktjr/**/mapper/*.xml
+pagehelper:
+  helperDialect: mysql
+  reasonable: false
+  supportMethodsArguments: true
+com:
+  guns21:
+    spring:
+      mvc:
+        valuable-enum-package: com.ktjr.**.enums
+    session:
+      maximum: 3
+    security:
+      anonymous: false
+      login: /op/v1/login
+      logout: /op/v1/logout
+      permit:
+        authorize-any: false
+        pages:
+          - /api/usermanage/v1/function/access/list
+          - /api/usermanage/v1/permission/listByPointIds
+          - /api/usermanage/v1/functional-points/role
+          - /api/usermanage/v1/role/list2
+          - /api/usermanage/v1/permission/lists
+          - /api/v1/sms/sign/get-all-sign
+          - /api/v1/sms/templates/code
+          - /api/v1/notify/email/by-receiver
+          - /api/v1/sms/records/by-mobile
+          - /api/v1/files
+          - /api/usermanage/v1/user/initSetPwd
+          - /api/usermanage/v1/user/current
+          - /actuator/*
+    web:
+      request:
+        logging: true
+    open-feign:
+      feign-service-packages: com.ktjr.callcenter.**.service.feign,com.ktjr.callcenter.proxy.sdk.weixin
+logging:
+  level:
+    com.ktjr: debug
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+#  config: /server/app/logback_admin.xml

@@ -44,6 +44,9 @@ public class ${class_name}RepositoryImpl implements ${class_name}Repository {
 
     @Override
     public Integer insertBatch(List<${class_name}DO> data) {
+        if (ObjectUtils.isEmpty(data)) {
+            return 0;
+        }
         return mapper.insertBatch(data);
     }
 

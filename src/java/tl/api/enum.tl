@@ -1,10 +1,9 @@
 package ${java_class.package};
 
-import com.guns21.common.enums.ValuableEnum;
 import lombok.Getter;
 
 @Getter
-public enum ${java_class.class_name} implements ValuableEnum {
+public enum ${java_class.class_name} {
 	% if len(java_class.fields)==0 :
 	;
 	% endif 
